@@ -84,6 +84,7 @@ func (that *ManagerController) StartCrawler(c *fiber.Ctx) error {
 	if err != nil {
 		return responses.Error(c, err.Error())
 	}
+	fmt.Println("Creating VM for: ", siteID)
 	instanceName, err := helper.CreateVM(*siteCollection)
 	if err != nil {
 		return err
