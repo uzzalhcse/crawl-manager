@@ -47,7 +47,7 @@
         </UFormGroup>
 
         <UFormGroup label="Zone" name="zone">
-          <USelectMenu v-model="site.vm_config.zone" :options="['asia-northeast1', 'asia-northeast2']" :ui-menu="{ select: 'capitalize', option: { base: 'capitalize' } }" />
+          <USelectMenu v-model="site.vm_config.zone" :options="['asia-northeast1-a', 'asia-northeast1-b', 'asia-northeast1-c']" :ui-menu="{ select: 'capitalize', option: { base: 'capitalize' } }" />
         </UFormGroup>
 
         <div class="flex justify-end gap-3">

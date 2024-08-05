@@ -16,7 +16,7 @@ import (
 
 func GenerateBinaryBuild(SiteID string) error {
 
-	appsDir := "/root/ninja-crawl-manager-backend/apps"
+	appsDir := "/root/ninja-combined-crawler/apps"
 	distDir := "/root//crawl-manager/backend"
 
 	//appsDir := "/home/uzzal/Workplace/Lazuli/ninja-combined-crawler/apps"
