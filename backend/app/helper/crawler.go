@@ -71,7 +71,6 @@ func CreateVM(siteCollection models.SiteCollection) (string, error) {
 	}
 	accessToken := strings.TrimSpace(string(output))
 
-	fmt.Println("accessToken", accessToken)
 	// Construct the request body for creating the VM
 	vmRequestBody := map[string]interface{}{
 		"canIpForward":       false,
@@ -106,6 +105,14 @@ func CreateVM(siteCollection models.SiteCollection) (string, error) {
 				{
 					"key":   "enable-osconfig",
 					"value": "TRUE",
+				},
+				{
+					"key":   "startup-script",
+					"value": "#! /bin/bash\\nSiteID=\\\"sumitool\\\"\\ninstanceName=\\\"sumitool\\\"\\nulimit -n 1000000\\ncd /root\\ncurl -O http://35.243.109.168:8080/binary/$SiteID\\nchmod +x $SiteID\\ncurl -s http://35.243.109.168:8080/api/site-secret/$SiteID  > .env\\nsudo ./$SiteID\\ncurl http://35.243.109.168:8080/api/stop-crawler/$instanceName",
+				},
+				{
+					"key":   "ssh-keys",
+					"value": "haris_dipto:ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBJKv0j3qfsCVR3vWVNs94qfTiKX1/yYKorP/zAcm+Xh+gy/4v4P5cA9ZLZvGjXqVjUwEu1yJSxe9P/fD8LxE0ec= google-ssh {\"userName\":\"haris.dipto@lazuli.ninja\",\"expireOn\":\"2024-03-04T06:10:06+0000\"}\nharis_dipto:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCE+ZM7cG+i5CAYAMxLPGUG6snCFqIc/OC7f/ttm4+DxvdRDAlmPlYrhMTBMVfga2CP/Idq6Gc69nONrRVGSr8ZiGWqMHiyxZaQ6HuTViatY+8TtO6PIKcr59PbiMaPdehSSxB5C1lbXEtzSK0mpGek8yLg8yHrPD0uN5xfcJai4fI6bPydK6GBM/LXjo+pnc0/B7FBcpCUzpaXZgxB2X6I9eQdB7f80zoX+e00yhr6CP2ZdQQnpXA5E67iIx3FlBXqf+ORWwg1mzC6lt8YeXYHvGXH04AtNZBjrTuMFc/zScWZjlFgBBwLFdHNUmaSKC/yIPKL8Xhi7RtplcYYl1KV google-ssh {\"userName\":\"haris.dipto@lazuli.ninja\",\"expireOn\":\"2024-03-04T06:10:24+0000\"}",
 				},
 			},
 		},
@@ -180,7 +187,8 @@ func CreateVM(siteCollection models.SiteCollection) (string, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return "", fmt.Errorf("unexpected response status: %s", resp.Status)
+		fmt.Printf("unexpected response status: %s\n", resp.Status)
+		fmt.Printf("resp: %v\n", resp)
 	}
 
 	return instanceName, nil
