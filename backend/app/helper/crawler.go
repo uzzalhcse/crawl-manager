@@ -71,6 +71,7 @@ func CreateVM(siteCollection models.SiteCollection) (string, error) {
 	}
 	accessToken := strings.TrimSpace(string(output))
 
+	fmt.Println("accessToken", accessToken)
 	// Construct the request body for creating the VM
 	vmRequestBody := map[string]interface{}{
 		"canIpForward":       false,

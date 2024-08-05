@@ -87,7 +87,7 @@ func (that *ManagerController) StartCrawler(c *fiber.Ctx) error {
 	fmt.Println("Creating VM for: ", siteID)
 	instanceName, err := helper.CreateVM(*siteCollection)
 	if err != nil {
-		return err
+		return responses.Error(c, err.Error())
 	}
 	fmt.Println("instanceName: ", instanceName)
 	err = that.siteService.CreateCrawlingHistory(&models.CrawlingHistory{
