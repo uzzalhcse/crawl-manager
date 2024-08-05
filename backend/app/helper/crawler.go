@@ -5,6 +5,7 @@ import (
 	"crawl-manager-backend/app/models"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -59,10 +60,10 @@ func GenerateBinaryBuild(SiteID string) error {
 }
 
 func CreateVM(siteCollection models.SiteCollection) (string, error) {
-	//projectID := "lazuli-venturas"
 	date := time.Now().Format("2006-01-02")
 	instanceName := siteCollection.SiteID + "-" + date
 	machineType := fmt.Sprintf("projects/lazuli-venturas/zones/asia-northeast1-a/machineTypes/e2-custom-%d-%d", siteCollection.VmConfig.Cores, siteCollection.VmConfig.Memory)
+
 	// Get gcloud access token
 	cmd := exec.Command("gcloud", "auth", "print-access-token")
 	output, err := cmd.Output()
@@ -72,6 +73,7 @@ func CreateVM(siteCollection models.SiteCollection) (string, error) {
 	accessToken := strings.TrimSpace(string(output))
 
 	fmt.Println("machineType", machineType)
+
 	// Construct the request body for creating the VM
 	vmRequestBody := map[string]interface{}{
 		"canIpForward":       false,
@@ -102,7 +104,7 @@ func CreateVM(siteCollection models.SiteCollection) (string, error) {
 		},
 		"machineType": machineType,
 		"metadata": map[string]interface{}{
-			"items": []map[string]string{},
+			"items": []interface{}{},
 		},
 		"name": instanceName,
 		"networkInterfaces": []map[string]interface{}{
@@ -158,6 +160,8 @@ func CreateVM(siteCollection models.SiteCollection) (string, error) {
 		return "", fmt.Errorf("error marshaling JSON request body: %v", err)
 	}
 
+	fmt.Println("Request Body:", string(requestBody))
+
 	// Send the request to create the VM
 	url := "https://compute.googleapis.com/compute/v1/projects/lazuli-venturas/zones/asia-northeast1-a/instances"
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
@@ -176,7 +180,10 @@ func CreateVM(siteCollection models.SiteCollection) (string, error) {
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		fmt.Printf("unexpected response status: %s\n", resp.Status)
-		fmt.Printf("resp: %v\n", resp)
+		fmt.Printf("Response Headers: %v\n", resp.Header)
+		respBody, _ := io.ReadAll(resp.Body)
+		fmt.Printf("Response Body: %s\n", string(respBody))
+		return "", fmt.Errorf("unexpected response status: %s", resp.Status)
 	}
 
 	return instanceName, nil
