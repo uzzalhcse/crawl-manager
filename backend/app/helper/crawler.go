@@ -183,7 +183,7 @@ func CreateVM(siteCollection models.SiteCollection) (string, error) {
 		fmt.Printf("Response Headers: %v\n", resp.Header)
 		respBody, _ := io.ReadAll(resp.Body)
 		fmt.Printf("Response Body: %s\n", string(respBody))
-		return "", fmt.Errorf("unexpected response status: %s", resp.Status)
+		return "", fmt.Errorf("unexpected response %s", string(respBody))
 	}
 
 	return instanceName, nil
