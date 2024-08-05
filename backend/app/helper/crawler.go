@@ -111,7 +111,7 @@ func CreateVM(siteCollection models.SiteCollection) (string, error) {
 				},
 				{
 					"key":   "startup-script",
-					"value": fmt.Sprintf("#! /bin/bash\nSiteID=\"%s\"\ninstanceName=\"%s\"\nulimit -n 1000000\ncd /root\ncurl -O http://35.243.109.168:8080/binary/$SiteID\nchmod +x $SiteID\ncurl -s http://35.243.109.168:8080/api/site-secret/$SiteID > .env\nsudo ./$SiteID\ncurl http://35.243.109.168:8080/api/stop-crawler/$instanceName", siteCollection.SiteID, instanceName),
+					"value": fmt.Sprintf("#! /bin/bash\nSiteID=\"%s\"\ninstanceName=\"%s\"\nulimit -n 1000000\ncd /root\ncurl -O http://35.243.109.168:8080/binary/$SiteID\nchmod +x $SiteID\ncurl -s http://35.243.109.168:8080/api/site-secret/env/$SiteID > .env\nsudo ./$SiteID\ncurl http://35.243.109.168:8080/api/stop-crawler/$instanceName", siteCollection.SiteID, instanceName),
 				},
 				{
 					"key":   "ssh-keys",
