@@ -35,15 +35,15 @@
         </UFormGroup>
         <h2 class="font-black">VM Config</h2>
         <UFormGroup label="Cores" name="cores">
-          <UInput v-model="site.vm_config.cores" type="text" />
+          <UInput v-model="site.vm_config.cores" type="number" />
         </UFormGroup>
 
         <UFormGroup label="Memory (MB)" name="memory">
-          <UInput v-model="site.vm_config.memory" type="text" />
+          <UInput v-model="site.vm_config.memory" type="number" />
         </UFormGroup>
 
         <UFormGroup label="Disk Sze (GB)" name="disk">
-          <UInput v-model="site.vm_config.disk" type="text" />
+          <UInput v-model="site.vm_config.disk" type="number" />
         </UFormGroup>
 
         <UFormGroup label="Zone" name="zone">
@@ -58,7 +58,6 @@
     </PortalModal>
     <PortalModal v-model="isEditModalOpen" :ui="{ width: 'sm:max-w-md' }" description="Edit a site" title="Edit site">
       <UForm :state="site" :validate="validate" :validate-on="['submit']" class="space-y-4" @submit="updateItem">
-        {{site}}
         <UFormGroup label="Site ID" name="site_id">
           <UInput v-model="site.site_id" autofocus type="text" />
         </UFormGroup>
@@ -70,16 +69,17 @@
           <UInput v-model="site.url" type="text" />
         </UFormGroup>
 
+        <h2 class="font-black">VM Config</h2>
         <UFormGroup label="Cores" name="cores">
-          <UInput v-model="site.vm_config.cores" type="text" />
+          <UInput v-model="site.vm_config.cores" type="number" />
         </UFormGroup>
 
         <UFormGroup label="Memory (MB)" name="memory">
-          <UInput v-model="site.vm_config.memory" type="text" />
+          <UInput v-model="site.vm_config.memory" type="number" />
         </UFormGroup>
 
         <UFormGroup label="Disk Sze (GB)" name="disk">
-          <UInput v-model="site.vm_config.disk" type="text" />
+          <UInput v-model="site.vm_config.disk" type="number" />
         </UFormGroup>
 
         <UFormGroup label="Zone" name="zone">
