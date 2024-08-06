@@ -13,6 +13,7 @@ services:
     networks:
       - app-network
     environment:
+      - APP_PORT=${APP_PORT:-8080}
       - DB_USERNAME=${DB_USERNAME:-lazuli}
       - DB_PASSWORD=${DB_PASSWORD:-x1RWo6cqFtHiaAHce5HB}
       - DB_HOST=${DB_HOST:-mongo}
