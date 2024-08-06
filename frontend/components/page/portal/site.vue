@@ -35,15 +35,15 @@
         </UFormGroup>
         <h2 class="font-black">VM Config</h2>
         <UFormGroup label="Cores" name="cores">
-          <UInput v-model="site.vm_config.cores" type="number" />
+          <UInput v-model.number="site.vm_config.cores" type="number" />
         </UFormGroup>
 
         <UFormGroup label="Memory (MB)" name="memory">
-          <UInput v-model="site.vm_config.memory" type="number" />
+          <UInput v-model.number="site.vm_config.memory" type="number" />
         </UFormGroup>
 
         <UFormGroup label="Disk Sze (GB)" name="disk">
-          <UInput v-model="site.vm_config.disk" type="number" />
+          <UInput v-model.number="site.vm_config.disk" type="number" />
         </UFormGroup>
 
         <UFormGroup label="Zone" name="zone">
@@ -71,15 +71,15 @@
 
         <h2 class="font-black">VM Config</h2>
         <UFormGroup label="Cores" name="cores">
-          <UInput v-model="site.vm_config.cores" type="number" />
+          <UInput v-model.number="site.vm_config.cores" type="number" />
         </UFormGroup>
 
         <UFormGroup label="Memory (MB)" name="memory">
-          <UInput v-model="site.vm_config.memory" type="number" />
+          <UInput v-model.number="site.vm_config.memory" type="number" />
         </UFormGroup>
 
         <UFormGroup label="Disk Sze (GB)" name="disk">
-          <UInput v-model="site.vm_config.disk" type="number" />
+          <UInput v-model.number="site.vm_config.disk" type="number" />
         </UFormGroup>
 
         <UFormGroup label="Zone" name="zone">

@@ -1,4 +1,5 @@
 import type { Avatar } from '#ui/types';
+import * as vm from "node:vm";
 
 export type UserStatus = 'subscribed' | 'unsubscribed' | 'bounced'
 interface SearchParameters {
@@ -21,6 +22,12 @@ export interface Category {
 }
 
 
+export interface VmConfig {
+  cores:number,
+  memory:number,
+  disk:number,
+  zone:string,
+}
 export interface Site {
   id: number | null
   site_id: string | null
@@ -28,6 +35,6 @@ export interface Site {
   url: string | null
   status: string | null
   no_of_crawling_per_month: number | null
-  vm_config: string | null
+  vm_config: VmConfig
 }
 
