@@ -60,10 +60,10 @@ func GenerateBinaryBuild(SiteID string) error {
 }
 
 func CreateVM(siteCollection models.SiteCollection) (string, error) {
+	projectID := "lazuli-venturas"
 	date := time.Now().Format("2006-01-02")
 	instanceName := siteCollection.SiteID + "-" + date
-	machineType := fmt.Sprintf("projects/lazuli-venturas/zones/asia-northeast1-a/machineTypes/e2-custom-%d-%d", siteCollection.VmConfig.Cores, siteCollection.VmConfig.Memory)
-
+	machineType := fmt.Sprintf("projects/%s/zones/%s/machineTypes/e2-custom-%d-%d", projectID, siteCollection.VmConfig.Zone, siteCollection.VmConfig.Cores, siteCollection.VmConfig.Memory)
 	// Get gcloud access token
 	cmd := exec.Command("gcloud", "auth", "print-access-token")
 	output, err := cmd.Output()
@@ -73,7 +73,6 @@ func CreateVM(siteCollection models.SiteCollection) (string, error) {
 	accessToken := strings.TrimSpace(string(output))
 
 	fmt.Println("machineType", machineType)
-
 	// Construct the request body for creating the VM
 	vmRequestBody := map[string]interface{}{
 		"canIpForward":       false,
@@ -86,7 +85,7 @@ func CreateVM(siteCollection models.SiteCollection) (string, error) {
 				"deviceName": instanceName,
 				"initializeParams": map[string]interface{}{
 					"diskSizeGb":  siteCollection.VmConfig.DiskSize,
-					"diskType":    "projects/lazuli-venturas/zones/asia-northeast1-a/diskTypes/pd-balanced",
+					"diskType":    fmt.Sprintf("projects/lazuli-venturas/zones/%s/diskTypes/pd-balanced", siteCollection.VmConfig.Zone),
 					"sourceImage": "projects/lazuli-venturas/global/images/reference-crawler-disk-image",
 				},
 				"mode": "READ_WRITE",
@@ -164,7 +163,7 @@ func CreateVM(siteCollection models.SiteCollection) (string, error) {
 		"tags": map[string]interface{}{
 			"items": []string{"http-server", "https-server"},
 		},
-		"zone": "projects/lazuli-venturas/zones/asia-northeast1-a",
+		"zone": fmt.Sprintf("projects/%s/zones/%s", projectID, siteCollection.VmConfig.Zone),
 	}
 
 	// Marshal the request body to JSON
@@ -173,10 +172,8 @@ func CreateVM(siteCollection models.SiteCollection) (string, error) {
 		return "", fmt.Errorf("error marshaling JSON request body: %v", err)
 	}
 
-	fmt.Println("Request Body:", string(requestBody))
-
 	// Send the request to create the VM
-	url := "https://compute.googleapis.com/compute/v1/projects/lazuli-venturas/zones/asia-northeast1-a/instances"
+	url := fmt.Sprintf("https://compute.googleapis.com/compute/v1/projects/%s/zones/%s/instances", projectID, siteCollection.VmConfig.Zone)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
 	if err != nil {
 		return "", fmt.Errorf("error creating HTTP request: %v", err)
