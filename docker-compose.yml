@@ -8,13 +8,16 @@ services:
     container_name: backend
     ports:
       - "8080:8080"
+    depends_on:
+      - mongo
     networks:
       - app-network
     environment:
-      - DB_USERNAME="lazuli"
-      - DB_PASSWORD="x1RWo6cqFtHiaAHce5HB"
-      - DB_HOST=localhost
-      - DB_PORT=27017
+      - DB_USERNAME=${DB_USERNAME:-lazuli}
+      - DB_PASSWORD=${DB_PASSWORD:-x1RWo6cqFtHiaAHce5HB}
+      - DB_HOST=${DB_HOST:-mongo}
+      - DB_PORT=${DB_PORT:-27017}
+      - APP_ENV=${APP_ENV:-production}
 
   frontend:
     build:
@@ -27,6 +30,21 @@ services:
       - backend
     networks:
       - app-network
+  mongo:
+    container_name: mongo
+    image: mongo:6.0
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=lazuli
+      - MONGO_INITDB_ROOT_PASSWORD=x1RWo6cqFtHiaAHce5HB
+    networks:
+      - app-network
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
 
 networks:
   app-network:
