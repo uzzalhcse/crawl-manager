@@ -175,7 +175,12 @@ const secret = ref({
 // https://ui.nuxt.com/components/form
 const validate = (state: Site): FormError[] => {
   const errors = []
+  if (!state.site_id) errors.push({ path: 'site_id', message: 'Please enter a site_id.' })
   if (!state.name) errors.push({ path: 'name', message: 'Please enter a name.' })
+  if (!state.url) errors.push({ path: 'url', message: 'Please enter a url.' })
+  if (!state.vm_config.cores) errors.push({ path: 'cores', message: 'Please enter cores.' })
+  if (!state.vm_config.memory) errors.push({ path: 'memory', message: 'Please enter memory.' })
+  if (!state.vm_config.disk) errors.push({ path: 'disk', message: 'Please enter disk.' })
   return errors
 }
 const { data: item, pending: itemsPending, refresh } = await useSiteApi().findAll({ page, limit });
