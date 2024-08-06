@@ -50,10 +50,10 @@ func (that *ManagerController) StopCrawler(c *fiber.Ctx) error {
 	if err != nil {
 		return responses.Error(c, err.Error())
 	}
-	fmt.Println(crawlingHistory)
 	command := []string{"gcloud", "compute", "instances", "stop", instanceName, "--zone", crawlingHistory.Site.VmConfig.Zone}
 
-	ExecuteCommand(command[0], command[1:])
+	res := ExecuteCommand(command[0], command[1:])
+	fmt.Println("cmd: ", res)
 	return nil
 }
 func ExecuteCommand(command string, args []string) string {
