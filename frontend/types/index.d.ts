@@ -30,7 +30,7 @@ export interface VmConfig {
 }
 export interface Site {
   id: number | null
-  site_id: string | null
+  site_id: string
   name: string | null
   url: string | null
   status: string | null

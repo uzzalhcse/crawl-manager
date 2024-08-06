@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"crawl-manager-backend/app/models"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -265,7 +266,10 @@ func (r *Repository) CreateSecretCollection(siteSecret *models.SiteSecret) error
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	_, err := collection.InsertOne(ctx, siteSecret)
+	filter := bson.M{"site_id": siteSecret.SiteID}
+	opts := options.Replace().SetUpsert(true)
+
+	_, err := collection.ReplaceOne(ctx, filter, siteSecret, opts)
 	return err
 }
 func (r *Repository) GetAllSiteSecretCollections() ([]models.SiteSecret, error) {

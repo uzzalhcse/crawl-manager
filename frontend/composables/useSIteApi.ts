@@ -8,6 +8,7 @@ export function useSiteApi() {
 
   const getSecrets = (site_id:string) => useApi(`/api/site-secret/${site_id}`);
   const addSecrets = (payload: any) => useApi(`/api/site-secret`,{ method:'POST',body:JSON.stringify(payload) })
+  const updateSecrets = (payload: any,site_id:string) => useApi(`/api/site-secret/${site_id}`,{ method:'PUT',body:JSON.stringify(payload) })
   const startCrawler = (site_id:string) => useApi(`/api/start-crawler/${site_id}`);
   const stopCrawler = (instance_name:string) => useApi(`/api/stop-crawler/${instance_name}`);
   const crawlingHistory = () => useApi(`/api/crawling-history`);
@@ -18,6 +19,7 @@ export function useSiteApi() {
     remove,
     getSecrets,
     addSecrets,
+    updateSecrets,
     startCrawler,
     crawlingHistory,
     stopCrawler

@@ -234,7 +234,7 @@ function handleEdit(site:any) {
   isEditModalOpen.value = !isEditModalOpen.value;
 }
 async function handleSecret(site: any) {
-  if (site){
+  if (site.site_id){
     useSiteApi().getSecrets(site.site_id).then(res=>{
       console.log('res', res.data.value)
       secret.value =res.data.value
