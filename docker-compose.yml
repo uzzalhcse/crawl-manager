@@ -15,7 +15,7 @@ services:
     environment:
       - DB_USERNAME="lazuli"
       - DB_PASSWORD="x1RWo6cqFtHiaAHce5HB"
-      - DB_HOST=mongo
+      - DB_HOST=35.243.109.168
       - DB_PORT=27017
 
   frontend:
