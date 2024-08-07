@@ -11,7 +11,6 @@
     </DashboardToolbar>
 
     <UTable
-      v-if="item"
       :columns="columns"
       :loading="itemsPending"
       :progress="{ color: 'primary', animation: 'carousel' }"
@@ -20,11 +19,23 @@
       class="w-full"
       sort-mode="manual"
     >
-      <template #action-data="{ row }">
-        <UButton class="mr-2" color="green" icon="i-heroicons-pause-circle" @click="stopCrawler(row)"/>
+      <template #logs-data="{ row }">
+        <UAccordion
+            color="primary"
+            variant="soft"
+            size="sm"
+            :items="[{ label: 'View', content: row.logs , icon: 'i-heroicons-document-text' }]"
+        />
+      </template>
+<!--      <template #action-data="{ row }">-->
+<!--        <UButton class="mr-2" color="green" icon="i-heroicons-pause-circle" @click="stopCrawler(row)"/>-->
+<!--      </template>-->
+      <template #empty-state>
+        <div class="flex flex-col items-center justify-center py-6 gap-3">
+          <span class="italic text-sm">No Crawling History Found!</span>
+        </div>
       </template>
     </UTable>
-    <h3 v-else class="text-center mt-5">No Data Found</h3>
   </div>
 </template>
 
@@ -43,11 +54,11 @@ const toast = useToast()
 const columns = [
   { key: 'site_id', label: 'Site', sortable: true },
   { key: 'instance_name', label: 'Instance Name', sortable: true },
-  { key: 'logs', label: 'Logs'},
   { key: 'status', label: 'Status' ,sortable: true},
   { key: 'start_date', label: 'Start Date',sortable: true },
   { key: 'end_date', label: 'End Date',sortable: true },
-  { key: 'action', label: 'Action' }
+  { key: 'action', label: 'Action' },
+  { key: 'logs', label: 'Logs'}
 ];
 
 

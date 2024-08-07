@@ -106,7 +106,6 @@
       </UForm>
     </PortalModal>
     <UTable
-      v-if="item"
       :columns="columns"
       :loading="itemsPending"
       :progress="{ color: 'primary', animation: 'carousel' }"
@@ -121,8 +120,13 @@
         <UButton color="orange" icon="i-heroicons-pencil-square" @click="handleEdit(row)"/>
       </template>
 
+      <template #empty-state>
+        <div class="flex flex-col items-center justify-center py-6 gap-3">
+          <span class="italic text-sm">No Sites Found!</span>
+          <UButton label="Add New Site" @click="handleAdd" />
+        </div>
+      </template>
     </UTable>
-    <h3 v-else class="text-center mt-5">No Data Found</h3>
   </div>
 </template>
 

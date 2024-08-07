@@ -35,7 +35,7 @@ func (r *Repository) GetAllSiteCollections() ([]models.SiteCollection, error) {
 	}
 	defer cursor.Close(ctx)
 
-	var results []models.SiteCollection
+	results := []models.SiteCollection{}
 	if err := cursor.All(ctx, &results); err != nil {
 		return nil, err
 	}
@@ -114,7 +114,7 @@ func (r *Repository) GetCrawlingHistory() ([]models.CrawlingHistory, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	var crwCollection []models.CrawlingHistory
+	crwCollection := []models.CrawlingHistory{}
 
 	cursor, err := collection.Find(ctx, bson.M{})
 	if err != nil {
