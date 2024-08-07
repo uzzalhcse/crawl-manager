@@ -57,7 +57,7 @@ const columns = [
   { key: 'status', label: 'Status' ,sortable: true},
   { key: 'start_date', label: 'Start Date',sortable: true },
   { key: 'end_date', label: 'End Date',sortable: true },
-  { key: 'action', label: 'Action' },
+  // { key: 'action', label: 'Action' },
   { key: 'logs', label: 'Logs'}
 ];
 
