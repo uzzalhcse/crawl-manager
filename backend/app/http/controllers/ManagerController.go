@@ -46,14 +46,16 @@ func (that *ManagerController) StopCrawler(c *fiber.Ctx) error {
 	if err != nil {
 		return responses.Error(c, "Crawler not running")
 	}
-	err = that.siteService.UpdateCrawlingHistory(instanceName, map[string]interface{}{"status": "stopped", "end_date": time.Now().Format("2006-01-02 15:04:05")})
+
+	command := []string{"gcloud", "compute", "instances", "stop", instanceName, "--zone", crawlingHistory.Site.VmConfig.Zone}
+	res := ExecuteCommand(command[0], command[1:])
+
+	err = that.siteService.UpdateCrawlingHistory(instanceName, map[string]interface{}{"status": "stopped", "logs": res, "end_date": time.Now().Format("2006-01-02 15:04:05")})
 	if err != nil {
 		return responses.Error(c, err.Error())
 	}
-	command := []string{"gcloud", "compute", "instances", "stop", instanceName, "--zone", crawlingHistory.Site.VmConfig.Zone}
 
-	res := ExecuteCommand(command[0], command[1:])
-	fmt.Println("cmd: ", res)
+	fmt.Println("cmd output: ", res)
 	return nil
 }
 func ExecuteCommand(command string, args []string) string {
@@ -94,6 +96,7 @@ func (that *ManagerController) StartCrawler(c *fiber.Ctx) error {
 		SiteID:       siteID,
 		Status:       "running",
 		InstanceName: instanceName,
+		Site:         siteCollection,
 		StartDate:    time.Now().Format("2006-01-02 15:04:05"),
 	})
 	if err != nil {
