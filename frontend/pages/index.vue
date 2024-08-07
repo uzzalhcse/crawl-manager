@@ -36,10 +36,7 @@
 </template>
 
 <script setup>
-definePageMeta({
-  name: 'Portal',
-  layout: 'portal',
-})
+
 </script>
 
 <style lang="scss" scoped>

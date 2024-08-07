@@ -86,7 +86,7 @@ func CreateVM(siteCollection models.SiteCollection) (string, error) {
 				"initializeParams": map[string]interface{}{
 					"diskSizeGb":  siteCollection.VmConfig.DiskSize,
 					"diskType":    fmt.Sprintf("projects/lazuli-venturas/zones/%s/diskTypes/pd-balanced", siteCollection.VmConfig.Zone),
-					"sourceImage": "projects/lazuli-venturas/global/images/reference-crawler-disk-image",
+					"sourceImage": "projects/lazuli-venturas/global/images/boilerplate-for-ninjacrawler-pkg-disk-image",
 				},
 				"mode": "READ_WRITE",
 				"type": "PERSISTENT",

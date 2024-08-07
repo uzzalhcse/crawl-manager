@@ -117,10 +117,8 @@
     >
       <template #action-data="{ row }">
         <UButton class="mr-2" color="green" icon="i-heroicons-play" @click="startCrawler(row)"/>
-        <UButton color="yellow" icon="i-heroicons-key" @click="handleSecret(row)"/>
-        <UDropdown :items="handleAction(row)" position="bottom-end">
-          <UButton color="gray" icon="i-heroicons-ellipsis-vertical" variant="ghost" />
-        </UDropdown>
+        <UButton class="mr-2" color="yellow" icon="i-heroicons-key" @click="handleSecret(row)"/>
+        <UButton color="orange" icon="i-heroicons-pencil-square" @click="handleEdit(row)"/>
       </template>
 
     </UTable>
@@ -164,7 +162,7 @@ const site = ref({
     cores:2,
     memory:4096,
     disk:10,
-    zone:"asia-northeast1"
+    zone:"asia-northeast1-a"
   }
 })
 const secret = ref({
@@ -178,7 +176,7 @@ const validate = (state: Site): FormError[] => {
   if (!state.site_id) errors.push({ path: 'site_id', message: 'Please enter a site_id.' })
   if (!state.name) errors.push({ path: 'name', message: 'Please enter a name.' })
   if (!state.url) errors.push({ path: 'url', message: 'Please enter a url.' })
-  if (!state.vm_config.cores) errors.push({ path: 'cores', message: 'Please enter cores.' })
+  if (!state.vm_config.cores || state.vm_config.cores < 2) errors.push({ path: 'cores', message: 'Please enter valid cores.' })
   if (!state.vm_config.memory) errors.push({ path: 'memory', message: 'Please enter memory.' })
   if (!state.vm_config.disk) errors.push({ path: 'disk', message: 'Please enter disk.' })
   return errors
@@ -192,21 +190,6 @@ function updatePage(newPage: number) {
   router.push({ query: { ...route.query, page: newPage } });
 }
 
-function handleAction (site:any) {
-  return [
-    [
-      {
-        label: 'Edit',
-        click: () => handleEdit(site)
-      },
-      // {
-      //   label: 'Remove',
-      //   labelClass: 'text-red-500 dark:text-red-400',
-      //   click: () => handleRemove(site.id)
-      // }
-    ]
-  ]
-}
 
 function resetItem(){
   site.value = {
@@ -220,7 +203,7 @@ function resetItem(){
       cores:2,
       memory:4096,
       disk:10,
-      zone:"asia-northeast1"
+      zone:"asia-northeast1-a"
     }
   }
 }
@@ -228,9 +211,10 @@ function handleAdd(){
   isNewModalOpen.value = !isNewModalOpen.value
   resetItem()
 }
-function handleEdit(site:any) {
-  console.log('site',toRaw(site))
-  site.value = site
+function handleEdit(row:any) {
+  if (row.site_id){
+    site.value = row
+  }
   isEditModalOpen.value = !isEditModalOpen.value;
 }
 async function handleSecret(site: any) {

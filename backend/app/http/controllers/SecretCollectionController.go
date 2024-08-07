@@ -53,14 +53,32 @@ func (ctrl *SecretCollectionController) GetEnvBySite(c *fiber.Ctx) error {
 	siteID := c.Params("siteID")
 	siteCollection, _ := ctrl.Service.GetByID(siteID)
 
-	//return c.JSON(siteCollection.Secrets)
-	// Prepare the data for .env file format
+	// Define default data
+	defaultData := map[string]interface{}{
+		"DB_USERNAME":          "lazuli",
+		"DB_PASSWORD":          "x1RWo6cqFtHiaAHce5HB",
+		"DB_HOST":              "localhost",
+		"DB_PORT":              27017,
+		"USER_AGENT":           "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+		"APP_ENV":              "production",
+		"API_USERNAME":         "lazuli",
+		"API_PASSWORD":         "ninja",
+		"GCP_CREDENTIALS_PATH": "/root/apps/gcp-file-upload-key.json",
+	}
+
+	if siteCollection != nil && siteCollection.Secrets != nil {
+		// Merge siteCollection.Secrets into defaultData
+		for key, value := range siteCollection.Secrets {
+			defaultData[key] = value
+		}
+	}
+
+	// Create envData string
 	var envData string
-	for key, value := range siteCollection.Secrets {
+	for key, value := range defaultData {
 		envData += fmt.Sprintf("%s=%v\n", key, value)
 	}
 
-	// You can then return the data or store it in a file
 	return c.SendString(envData)
 }
 

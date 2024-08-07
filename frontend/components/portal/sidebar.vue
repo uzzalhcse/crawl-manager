@@ -40,9 +40,9 @@
 <!--          </li>-->
           <span class="text-gray-400 text-[12px]">Settings</span>
           <li>
-            <nuxt-link to="/portal" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+            <nuxt-link to="/portal/setting/general" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
               <UIcon name="i-heroicons-paint-brush" />
-              <span class="ml-3">Settings</span>
+              <span class="ml-3">General</span>
             </nuxt-link>
           </li>
         </ul>
