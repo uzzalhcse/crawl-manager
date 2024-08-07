@@ -246,40 +246,53 @@ async function handleRemove(id: number) {
 async function saveItem() {
   loading.value = true
   site.value.no_of_crawling_per_month = site.value.no_of_crawling_per_month.value
-  await useSiteApi().save(site.value);
-  loading.value = false
-  isNewModalOpen.value = false;
-  refresh()
-  toast.add({ title: "Site Saved" })
+  useSiteApi().save(site.value).then(res=>{
+    if(res.status.value!="error"){
+      isNewModalOpen.value = false;
+      refresh()
+      toast.add({ title: "Site Saved" })
+    }
+    loading.value = false
+  })
 }
 async function startCrawler(site:any) {
   loading.value = true
   await useSiteApi().startCrawler(site.site_id).then(res=>{
     if(res.status.value!="error"){
-      loading.value = false
       toast.add({ title: "Crawler Started" })
     }
+    loading.value = false
   })
 }
 
 async function saveSecret() {
   loading.value = true
+
+  if(secret.value.secrets.length<3) {
+    secret.value.secrets = "{}"
+  }
   secret.value.secrets = JSON.parse(secret.value.secrets);
   console.log("secret.value", secret.value.secrets);
-  await useSiteApi().addSecrets(secret.value);
-  loading.value = false
-  isSecretModalOpen.value = false;
-  toast.add({ title: "Secret Saved" })
+  useSiteApi().addSecrets(secret.value).then(res=>{
+    if(res.status.value!="error"){
+      isSecretModalOpen.value = false;
+      toast.add({ title: "Secret Saved" })
+    }
+    loading.value = false
+  })
 }
 
 async function updateItem() {
   loading.value = true
-  await useSiteApi().update(site.value, site.value.site_id);
-  isEditModalOpen.value = false;
-  resetItem()
-  loading.value = false
-  refresh()
-  toast.add({ title: "Site Saved" })
+  useSiteApi().update(site.value, site.value.site_id).then(res=>{
+    if(res.status.value!="error"){
+      isEditModalOpen.value = false;
+      resetItem()
+      refresh()
+      toast.add({ title: "Site Updated" })
+    }
+    loading.value = false
+  })
 
 }
 </script>

@@ -26,15 +26,15 @@ func (ctrl *SecretCollectionController) Index(c *fiber.Ctx) error {
 func (ctrl *SecretCollectionController) Create(c *fiber.Ctx) error {
 	var secretCollection models.SiteSecret
 	if err := c.BodyParser(&secretCollection); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return responses.Error(c, err.Error())
 	}
 
 	err := ctrl.Service.Create(&secretCollection)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return responses.Error(c, err.Error())
 	}
 
-	return c.JSON(secretCollection)
+	return responses.Success(c, secretCollection)
 }
 
 func (ctrl *SecretCollectionController) GetByID(c *fiber.Ctx) error {
@@ -86,7 +86,7 @@ func (ctrl *SecretCollectionController) Update(c *fiber.Ctx) error {
 	siteID := c.Params("siteID")
 	var update map[string]interface{}
 	if err := c.BodyParser(&update); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return responses.Error(c, err.Error())
 	}
 
 	err := ctrl.Service.Update(siteID, update)
@@ -94,7 +94,7 @@ func (ctrl *SecretCollectionController) Update(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	return c.JSON(fiber.Map{"status": "success"})
+	return responses.Success(c, nil)
 }
 
 func (ctrl *SecretCollectionController) Delete(c *fiber.Ctx) error {
