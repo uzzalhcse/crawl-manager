@@ -144,7 +144,7 @@ const isEditModalOpen = ref<boolean>(false);
 const isSecretModalOpen = ref<boolean>(false);
 const toast = useToast()
 const columns = [
-  { key: 'name', label: 'Name', sortable: true },
+  { key: 'site_id', label: 'Name', sortable: true },
   { key: 'url', label: 'Url' },
   { key: 'no_of_crawling_per_month', label: 'Monthly Crawling limit' },
   { key: 'vm_config', label: 'VM Config' },
