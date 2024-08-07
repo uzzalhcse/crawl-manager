@@ -19,9 +19,6 @@
         <UFormGroup label="Site ID" name="site_id">
           <UInput v-model="site.site_id" autofocus type="text" />
         </UFormGroup>
-        <UFormGroup label="Name" name="name">
-          <UInput v-model="site.name" autofocus type="text" />
-        </UFormGroup>
 
         <UFormGroup label="Initial Url" name="url">
           <UInput v-model="site.url" type="text" />
@@ -60,9 +57,6 @@
       <UForm :state="site" :validate="validate" :validate-on="['submit']" class="space-y-4" @submit="updateItem">
         <UFormGroup label="Site ID" name="site_id">
           <UInput v-model="site.site_id" autofocus type="text" />
-        </UFormGroup>
-        <UFormGroup label="Name" name="name">
-          <UInput v-model="site.name" autofocus type="text" />
         </UFormGroup>
 
         <UFormGroup label="Initial Url" name="url">
@@ -117,7 +111,9 @@
       <template #action-data="{ row }">
         <UButton :loading="loading" class="mr-2" color="green" icon="i-heroicons-play" @click="startCrawler(row)"/>
         <UButton class="mr-2" color="yellow" icon="i-heroicons-key" @click="handleSecret(row)"/>
-        <UButton color="orange" icon="i-heroicons-pencil-square" @click="handleEdit(row)"/>
+        <UButton class="mr-2" color="orange" icon="i-heroicons-pencil-square" @click="handleEdit(row)"/>
+        <UButton :to="`https://console.cloud.google.com/storage/browser/gen_crawled_data_venturas_asia-northeast1/maker/${row.site_id}/logs`" icon="i-heroicons-clipboard-document-list"  target="_blank">Logs</UButton>
+
       </template>
 
       <template #empty-state>
@@ -178,7 +174,6 @@ const secret = ref({
 const validate = (state: Site): FormError[] => {
   const errors = []
   if (!state.site_id) errors.push({ path: 'site_id', message: 'Please enter a site_id.' })
-  if (!state.name) errors.push({ path: 'name', message: 'Please enter a name.' })
   if (!state.url) errors.push({ path: 'url', message: 'Please enter a url.' })
   if (!state.vm_config.cores || state.vm_config.cores < 2) errors.push({ path: 'cores', message: 'Please enter valid cores.' })
   if (!state.vm_config.memory) errors.push({ path: 'memory', message: 'Please enter memory.' })

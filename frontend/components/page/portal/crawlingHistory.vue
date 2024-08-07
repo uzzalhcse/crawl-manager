@@ -27,9 +27,9 @@
             :items="[{ label: 'View', content: row.logs , icon: 'i-heroicons-document-text' }]"
         />
       </template>
-<!--      <template #action-data="{ row }">-->
+      <template #action-data="{ row }">
 <!--        <UButton class="mr-2" color="green" icon="i-heroicons-pause-circle" @click="stopCrawler(row)"/>-->
-<!--      </template>-->
+      </template>
       <template #empty-state>
         <div class="flex flex-col items-center justify-center py-6 gap-3">
           <span class="italic text-sm">No Crawling History Found!</span>
