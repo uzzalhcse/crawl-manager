@@ -43,6 +43,7 @@ const toast = useToast()
 const columns = [
   { key: 'site_id', label: 'Site', sortable: true },
   { key: 'instance_name', label: 'Instance Name', sortable: true },
+  { key: 'logs', label: 'Logs'},
   { key: 'status', label: 'Status' ,sortable: true},
   { key: 'start_date', label: 'Start Date',sortable: true },
   { key: 'end_date', label: 'End Date',sortable: true },
