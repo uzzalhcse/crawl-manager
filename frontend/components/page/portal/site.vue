@@ -116,7 +116,7 @@
       sort-mode="manual"
     >
       <template #action-data="{ row }">
-        <UButton class="mr-2" color="green" icon="i-heroicons-play" @click="startCrawler(row)"/>
+        <UButton :loading="loading" class="mr-2" color="green" icon="i-heroicons-play" @click="startCrawler(row)"/>
         <UButton class="mr-2" color="yellow" icon="i-heroicons-key" @click="handleSecret(row)"/>
         <UButton color="orange" icon="i-heroicons-pencil-square" @click="handleEdit(row)"/>
       </template>
