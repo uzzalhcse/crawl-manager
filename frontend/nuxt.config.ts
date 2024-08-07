@@ -26,7 +26,7 @@ export default defineNuxtConfig({
     safelistColors: ['primary', 'red', 'orange', 'green'],
   },
   colorMode: {
-    preference: 'light'
+    preference: 'dark'
   },
   plugins: [
   ],
