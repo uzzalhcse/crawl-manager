@@ -111,8 +111,7 @@
       <template #action-data="{ row }">
         <UButton :loading="loading" class="mr-2" color="green" icon="i-heroicons-play" @click="startCrawler(row)"/>
         <UButton class="mr-2" color="yellow" icon="i-heroicons-key" @click="handleSecret(row)"/>
-        <UButton class="mr-2" color="orange" icon="i-heroicons-pencil-square" @click="handleEdit(row)"/>
-        <UButton :to="`https://console.cloud.google.com/storage/browser/gen_crawled_data_venturas_asia-northeast1/maker/${row.site_id}/logs`" icon="i-heroicons-clipboard-document-list"  target="_blank">Logs</UButton>
+        <UButton color="orange" icon="i-heroicons-pencil-square" @click="handleEdit(row)"/>
 
       </template>
 

@@ -20,12 +20,14 @@
       sort-mode="manual"
     >
       <template #logs-data="{ row }">
-        <UAccordion
-            color="primary"
-            variant="soft"
-            size="sm"
-            :items="[{ label: 'View', content: row.logs , icon: 'i-heroicons-document-text' }]"
-        />
+<!--        <UAccordion-->
+<!--            color="primary"-->
+<!--            variant="soft"-->
+<!--            size="sm"-->
+<!--            :items="[{ label: 'View', content: row.logs , icon: 'i-heroicons-document-text' }]"-->
+<!--        />-->
+        <UButton :to="`https://console.cloud.google.com/storage/browser/gen_crawled_data_venturas_asia-northeast1/maker/${row.site_id}/logs`" icon="i-heroicons-arrow-top-right-on-square"  target="_blank"></UButton>
+
       </template>
       <template #action-data="{ row }">
 <!--        <UButton class="mr-2" color="green" icon="i-heroicons-pause-circle" @click="stopCrawler(row)"/>-->
