@@ -239,7 +239,9 @@ async function handleRemove(id: number) {
 
 async function saveItem() {
   loading.value = true
-  site.value.no_of_crawling_per_month = site.value.no_of_crawling_per_month.value
+  if (site.value.no_of_crawling_per_month.value){
+    site.value.no_of_crawling_per_month = site.value.no_of_crawling_per_month.value
+  }
   useSiteApi().save(site.value).then(res=>{
     if(res.status.value!="error"){
       isNewModalOpen.value = false;
