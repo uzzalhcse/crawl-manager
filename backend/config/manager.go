@@ -7,6 +7,7 @@ type ManagerConfig struct {
 	DistDir   string
 	ProjectID string
 	Region    string
+	ServerIP  string
 }
 
 func loadManagerConfig() ManagerConfig {
@@ -15,5 +16,6 @@ func loadManagerConfig() ManagerConfig {
 		DistDir:   viper.GetString("DIST_DIR"),
 		ProjectID: viper.GetString("PROJECT_ID"),
 		Region:    viper.GetString("REGION"),
+		ServerIP:  viper.GetString("SERVER_IP"),
 	}
 }
