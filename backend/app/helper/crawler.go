@@ -138,7 +138,7 @@ func CreateVM(siteCollection models.SiteCollection, config *config.Config) (stri
 		},
 		"serviceAccounts": []map[string]interface{}{
 			{
-				"email": "845643578999-compute@developer.gserviceaccount.com",
+				"email": config.Manager.ServiceAccountEmail,
 				"scopes": []string{
 					"https://www.googleapis.com/auth/devstorage.read_only",
 					"https://www.googleapis.com/auth/logging.write",
