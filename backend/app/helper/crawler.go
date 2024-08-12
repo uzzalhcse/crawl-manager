@@ -58,7 +58,9 @@ func CreateVM(siteCollection models.SiteCollection, config *config.Config) (stri
 	//projectID := "lazuli-venturas"
 	//region := "asia-northeast1"
 	date := time.Now().Format("2006-01-02")
-	instanceName := siteCollection.SiteID + "-" + date
+	sanitizedSiteID := strings.ReplaceAll(siteCollection.SiteID, "_", "-")
+
+	instanceName := sanitizedSiteID + "-" + date
 	machineType := fmt.Sprintf("projects/%s/zones/%s/machineTypes/e2-custom-%d-%d", config.Manager.ProjectID, siteCollection.VmConfig.Zone, siteCollection.VmConfig.Cores, siteCollection.VmConfig.Memory)
 	// Get gcloud access token
 	cmd := exec.Command("gcloud", "auth", "print-access-token")
