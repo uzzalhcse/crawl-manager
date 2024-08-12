@@ -82,12 +82,12 @@ func (that *ManagerController) StartCrawler(c *fiber.Ctx) error {
 		}
 	}
 
-	err = helper.GenerateBinaryBuild(siteID)
+	err = helper.GenerateBinaryBuild(siteID, that.Config)
 	if err != nil {
 		return responses.Error(c, err.Error())
 	}
 	fmt.Println("Creating VM for: ", siteID)
-	instanceName, err := helper.CreateVM(*siteCollection)
+	instanceName, err := helper.CreateVM(*siteCollection, that.Config)
 	if err != nil {
 		return responses.Error(c, err.Error())
 	}

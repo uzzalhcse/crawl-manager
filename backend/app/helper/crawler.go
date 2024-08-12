@@ -3,6 +3,7 @@ package helper
 import (
 	"bytes"
 	"crawl-manager-backend/app/models"
+	"crawl-manager-backend/config"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -15,21 +16,15 @@ import (
 	"time"
 )
 
-func GenerateBinaryBuild(SiteID string) error {
-
-	appsDir := "/root/ninja-combined-crawler/apps"
-	distDir := "/root/crawl-manager/backend"
-
-	//appsDir := "/home/uzzal/Workplace/Lazuli/ninja-combined-crawler/apps"
-	//distDir := "/home/uzzal/Workplace/github/crawl-manager-backend"
+func GenerateBinaryBuild(SiteID string, config *config.Config) error {
 
 	// Get the absolute path of the parent directory
-	parentDir, err := filepath.Abs(distDir)
+	parentDir, err := filepath.Abs(config.Manager.DistDir)
 	if err != nil {
 		return fmt.Errorf("Error getting parent directory: %v", err)
 	}
 
-	files, err := os.ReadDir(appsDir)
+	files, err := os.ReadDir(config.Manager.AppsDir)
 	if err != nil {
 		return fmt.Errorf("Error reading directory:", err)
 	}
@@ -42,7 +37,7 @@ func GenerateBinaryBuild(SiteID string) error {
 				siteFound = true
 				fmt.Printf("Generating Binary for: %s\n", dirname)
 				outputPath := filepath.Join(parentDir, "dist", dirname)
-				sourcePath := fmt.Sprintf("%s/%s", appsDir, dirname)
+				sourcePath := fmt.Sprintf("%s/%s", config.Manager.AppsDir, dirname)
 				fmt.Println("sourcePath: ", sourcePath)
 				fmt.Println("outputPath: ", outputPath)
 				cmd := exec.Command("sh", "-c", fmt.Sprintf("cd %s && git pull && go build -o %s", sourcePath, outputPath))
@@ -59,11 +54,12 @@ func GenerateBinaryBuild(SiteID string) error {
 	return nil
 }
 
-func CreateVM(siteCollection models.SiteCollection) (string, error) {
-	projectID := "lazuli-venturas"
+func CreateVM(siteCollection models.SiteCollection, config *config.Config) (string, error) {
+	//projectID := "lazuli-venturas"
+	//region := "asia-northeast1"
 	date := time.Now().Format("2006-01-02")
 	instanceName := siteCollection.SiteID + "-" + date
-	machineType := fmt.Sprintf("projects/%s/zones/%s/machineTypes/e2-custom-%d-%d", projectID, siteCollection.VmConfig.Zone, siteCollection.VmConfig.Cores, siteCollection.VmConfig.Memory)
+	machineType := fmt.Sprintf("projects/%s/zones/%s/machineTypes/e2-custom-%d-%d", config.Manager.ProjectID, siteCollection.VmConfig.Zone, siteCollection.VmConfig.Cores, siteCollection.VmConfig.Memory)
 	// Get gcloud access token
 	cmd := exec.Command("gcloud", "auth", "print-access-token")
 	output, err := cmd.Output()
@@ -85,8 +81,8 @@ func CreateVM(siteCollection models.SiteCollection) (string, error) {
 				"deviceName": instanceName,
 				"initializeParams": map[string]interface{}{
 					"diskSizeGb":  siteCollection.VmConfig.DiskSize,
-					"diskType":    fmt.Sprintf("projects/lazuli-venturas/zones/%s/diskTypes/pd-balanced", siteCollection.VmConfig.Zone),
-					"sourceImage": "projects/lazuli-venturas/global/images/boilerplate-for-ninjacrawler-pkg-disk-image",
+					"diskType":    fmt.Sprintf("projects/%s/zones/%s/diskTypes/pd-balanced", config.Manager.ProjectID, siteCollection.VmConfig.Zone),
+					"sourceImage": fmt.Sprintf("projects/%s/global/images/boilerplate-for-ninjacrawler-pkg-disk-image", config.Manager.ProjectID),
 				},
 				"mode": "READ_WRITE",
 				"type": "PERSISTENT",
@@ -124,7 +120,7 @@ func CreateVM(siteCollection models.SiteCollection) (string, error) {
 					},
 				},
 				"stackType":  "IPV4_ONLY",
-				"subnetwork": "projects/lazuli-venturas/regions/asia-northeast1/subnetworks/default",
+				"subnetwork": fmt.Sprintf("projects/%s/regions/%s/subnetworks/default", config.Manager.ProjectID, config.Manager.Region),
 			},
 		},
 		"params": map[string]interface{}{
@@ -159,7 +155,7 @@ func CreateVM(siteCollection models.SiteCollection) (string, error) {
 		"tags": map[string]interface{}{
 			"items": []string{"http-server", "https-server"},
 		},
-		"zone": fmt.Sprintf("projects/%s/zones/%s", projectID, siteCollection.VmConfig.Zone),
+		"zone": fmt.Sprintf("projects/%s/zones/%s", config.Manager.ProjectID, siteCollection.VmConfig.Zone),
 	}
 
 	// Marshal the request body to JSON
@@ -169,7 +165,7 @@ func CreateVM(siteCollection models.SiteCollection) (string, error) {
 	}
 
 	// Send the request to create the VM
-	url := fmt.Sprintf("https://compute.googleapis.com/compute/v1/projects/%s/zones/%s/instances", projectID, siteCollection.VmConfig.Zone)
+	url := fmt.Sprintf("https://compute.googleapis.com/compute/v1/projects/%s/zones/%s/instances", config.Manager.ProjectID, siteCollection.VmConfig.Zone)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
 	if err != nil {
 		return "", fmt.Errorf("error creating HTTP request: %v", err)
