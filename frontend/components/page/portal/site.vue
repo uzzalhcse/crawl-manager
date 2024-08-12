@@ -14,7 +14,7 @@
 
     </DashboardToolbar>
 
-    <PortalModal v-model="isNewModalOpen" :ui="{ width: 'sm:max-w-md' }" description="Add a new site" title="New site">
+    <PortalModal v-model="isNewModalOpen" :ui="{ width: 'sm:max-w-md' }" description="Add a new site" title="New site" prevent-close>
       <UForm :state="site" :validate="validate" :validate-on="['submit']" class="space-y-4" @submit="saveItem">
         <UFormGroup label="Site ID" name="site_id">
           <UInput v-model="site.site_id" autofocus type="text" />
@@ -24,12 +24,20 @@
           <UInput v-model="site.url" type="text" />
         </UFormGroup>
 
-        <UFormGroup label="Number of Crawling Per month" name="no_of_crawling_per_month">
-          <USelectMenu v-model="site.no_of_crawling_per_month" :options="[
-     { value: 1, label: '1 time' },
-      { value: 2, label: '2 times' },
-      { value: 3, label: '3 times' }]" :ui-menu="{ select: 'capitalize', option: { base: 'capitalize' } }" />
+        <UFormGroup label="Frequency" name="frequency">
+          <UInput v-model="site.frequency" type="text" />
+          <template #description>
+            Schedules are specified using unix-cron format. E.g. every minute: "* * * * *", every 3 hours: "0 */3 * * *", every Monday at 9:00: "0 9 * * 1"
+            <UButton size="2xs" to="https://cloud.google.com/scheduler/docs/configuring/cron-job-schedules" icon="i-heroicons-arrow-top-right-on-square"  target="_blank">Learn More</UButton>
+          </template>
         </UFormGroup>
+
+<!--        <UFormGroup label="Number of Crawling Per month" name="no_of_crawling_per_month">-->
+<!--          <USelectMenu v-model="site.no_of_crawling_per_month" :options="[-->
+<!--     { value: 1, label: '1 time' },-->
+<!--      { value: 2, label: '2 times' },-->
+<!--      { value: 3, label: '3 times' }]" :ui-menu="{ select: 'capitalize', option: { base: 'capitalize' } }" />-->
+<!--        </UFormGroup>-->
         <h2 class="font-black">VM Config</h2>
         <UFormGroup label="Cores" name="cores">
           <UInput v-model.number="site.vm_config.cores" type="number" />
@@ -53,16 +61,24 @@
         </div>
       </UForm>
     </PortalModal>
-    <PortalModal v-model="isEditModalOpen" :ui="{ width: 'sm:max-w-md' }" description="Edit a site" title="Edit site">
+    <PortalModal v-model="isEditModalOpen" :ui="{ width: 'sm:max-w-md' }" description="Edit a site" title="Edit site" prevent-close>
       <UForm :state="site" :validate="validate" :validate-on="['submit']" class="space-y-4" @submit="updateItem">
         <UFormGroup label="Site ID" name="site_id">
-          <UInput v-model="site.site_id" autofocus type="text" />
+          <UInput v-model="site.site_id" autofocus type="text" :disabled="true"/>
         </UFormGroup>
 
         <UFormGroup label="Initial Url" name="url">
           <UInput v-model="site.url" type="text" />
         </UFormGroup>
 
+
+        <UFormGroup label="Frequency" name="frequency">
+          <UInput v-model="site.frequency" type="text" :disabled="true" />
+          <template #description>
+            Schedules are specified using unix-cron format. E.g. every minute: "* * * * *", every 3 hours: "0 */3 * * *", every Monday at 9:00: "0 9 * * 1"
+            <UButton size="2xs" to="https://cloud.google.com/scheduler/docs/configuring/cron-job-schedules" icon="i-heroicons-arrow-top-right-on-square"  target="_blank">Learn More</UButton>
+          </template>
+        </UFormGroup>
         <h2 class="font-black">VM Config</h2>
         <UFormGroup label="Cores" name="cores">
           <UInput v-model.number="site.vm_config.cores" type="number" />
@@ -87,7 +103,7 @@
       </UForm>
     </PortalModal>
 
-    <PortalModal v-model="isSecretModalOpen" :ui="{ width: 'sm:max-w-md' }" description="Add a new site" title="Site Secret">
+    <PortalModal v-model="isSecretModalOpen" :ui="{ width: 'sm:max-w-md' }" description="Add a new site" title="Site Secret" prevent-close>
       <UForm :state="secret" class="space-y-4" @submit="saveSecret">
         <UFormGroup label="Secrets (Json Key:Value)" name="secrets">
           <UTextarea v-model="secret.secrets" resize type="text" />
@@ -109,10 +125,15 @@
       sort-mode="manual"
     >
       <template #action-data="{ row }">
-        <UButton :loading="loading" class="mr-2" color="green" icon="i-heroicons-play" @click="startCrawler(row)"/>
-        <UButton class="mr-2" color="yellow" icon="i-heroicons-key" @click="handleSecret(row)"/>
-        <UButton color="orange" icon="i-heroicons-pencil-square" @click="handleEdit(row)"/>
-
+        <UTooltip class="mr-2" text="Run Manually" :popper="{ arrow: true }">
+          <UButton :loading="loading" color="green" icon="i-heroicons-play" @click="startCrawler(row)"/>
+        </UTooltip>
+        <UTooltip class="mr-2" text="Env Secrets" :popper="{ arrow: true }">
+          <UButton color="yellow" icon="i-heroicons-key" @click="handleSecret(row)"/>
+        </UTooltip>
+        <UTooltip text="Edit" :popper="{ arrow: true }">
+          <UButton color="orange" icon="i-heroicons-pencil-square" @click="handleEdit(row)"/>
+        </UTooltip>
       </template>
 
       <template #empty-state>
@@ -145,7 +166,7 @@ const toast = useToast()
 const columns = [
   { key: 'site_id', label: 'Name', sortable: true },
   { key: 'url', label: 'Url' },
-  { key: 'no_of_crawling_per_month', label: 'Monthly Crawling limit' },
+  { key: 'frequency', label: 'Crawling Frequency' },
   { key: 'vm_config', label: 'VM Config' },
   { key: 'action', label: 'Action' }
 ];
@@ -155,7 +176,7 @@ const site = ref({
   site_id: "",
   name: "",
   url: "",
-  no_of_crawling_per_month: 1,
+  frequency: "",
   status: "",
   vm_config: {
     cores:2,
@@ -174,6 +195,7 @@ const validate = (state: Site): FormError[] => {
   const errors = []
   if (!state.site_id) errors.push({ path: 'site_id', message: 'Please enter a site_id.' })
   if (!state.url) errors.push({ path: 'url', message: 'Please enter a url.' })
+  if (!state.frequency) errors.push({ path: 'frequency', message: 'Please enter a frequency.' })
   if (!state.vm_config.cores || state.vm_config.cores < 2) errors.push({ path: 'cores', message: 'Please enter valid cores.' })
   if (!state.vm_config.memory) errors.push({ path: 'memory', message: 'Please enter memory.' })
   if (!state.vm_config.disk) errors.push({ path: 'disk', message: 'Please enter disk.' })
@@ -196,7 +218,7 @@ function resetItem(){
     name: "",
     url: "",
     status: "",
-    no_of_crawling_per_month:1,
+    frequency:"",
     vm_config: {
       cores:2,
       memory:4096,
@@ -239,9 +261,6 @@ async function handleRemove(id: number) {
 
 async function saveItem() {
   loading.value = true
-  if (site.value.no_of_crawling_per_month.value){
-    site.value.no_of_crawling_per_month = site.value.no_of_crawling_per_month.value
-  }
   useSiteApi().save(site.value).then(res=>{
     if(res.status.value!="error"){
       isNewModalOpen.value = false;

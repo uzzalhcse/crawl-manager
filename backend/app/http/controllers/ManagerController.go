@@ -75,13 +75,6 @@ func (that *ManagerController) StartCrawler(c *fiber.Ctx) error {
 		return responses.Error(c, err.Error())
 	}
 
-	crawlingHistory, err := that.siteService.GetCrawlingHistoryByID(siteID, true)
-	if len(crawlingHistory) > 0 {
-		if len(crawlingHistory) >= siteCollection.NoOfCrawlingPerMonth {
-			return responses.Error(c, "Crawler Already running")
-		}
-	}
-
 	err = helper.GenerateBinaryBuild(siteID, that.Config)
 	if err != nil {
 		return responses.Error(c, err.Error())
@@ -112,16 +105,4 @@ func (that *ManagerController) CrawlingHistory(c *fiber.Ctx) error {
 	}
 
 	return responses.Success(c, crawlingHistory)
-	//err = helper.GenerateBinaryBuild(siteID)
-	//if err != nil {
-	//	return responses.Error(c, err.Error())
-	//}
-	//resp, err := helper.CreateVM(*siteCollection)
-	//if err != nil {
-	//	return err
-	//}
-	//fmt.Println("VM created successfully", resp)
-	//
-	//// TODO: Get the instance name,id and store into db
-	//return c.JSON(resp)
 }

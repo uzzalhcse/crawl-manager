@@ -34,7 +34,7 @@ export interface Site {
   name: string | null
   url: string | null
   status: string | null
-  no_of_crawling_per_month: number | null
+  frequency: string | null
   vm_config: VmConfig
 }
 

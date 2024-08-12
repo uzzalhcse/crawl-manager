@@ -1,11 +1,11 @@
 package models
 
 type SiteCollection struct {
-	SiteID               string   `json:"site_id" bson:"site_id"`
-	Url                  string   `json:"url" bson:"url"`
-	Status               string   `json:"status" bson:"status"`
-	NoOfCrawlingPerMonth int      `json:"no_of_crawling_per_month" bson:"no_of_crawling_per_month"`
-	VmConfig             VmConfig `json:"vm_config" bson:"vm_config"`
+	SiteID    string   `json:"site_id" bson:"site_id"`
+	Url       string   `json:"url" bson:"url"`
+	Status    string   `json:"status" bson:"status"`
+	Frequency string   `json:"frequency" bson:"frequency"`
+	VmConfig  VmConfig `json:"vm_config" bson:"vm_config"`
 }
 
 func (c *SiteCollection) GetTableName() string {

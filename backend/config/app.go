@@ -15,5 +15,6 @@ func loadAppConfig() AppConfig {
 		Name:      viper.GetString("APP_NAME"),
 		Port:      viper.GetString("APP_PORT"),
 		JwtSecret: viper.GetString("JWT_SECRET"),
+		Env:       viper.GetString("ENV"),
 	}
 }
