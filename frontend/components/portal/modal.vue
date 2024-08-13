@@ -75,7 +75,7 @@ const config = computed(() => ({
   },
   default: {
     closeButton: {
-      // icon: appConfig.ui.icon.close,
+      icon: 'i-heroicons-x-mark-20-solid',
       color: 'gray' as const,
       variant: 'ghost' as const,
       size: 'sm' as const

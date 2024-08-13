@@ -30,7 +30,12 @@
 
       </template>
       <template #action-data="{ row }">
-<!--        <UButton class="mr-2" color="green" icon="i-heroicons-pause-circle" @click="stopCrawler(row)"/>-->
+        <UTooltip v-if="row.status == 'running'" text="Stop Crawler" :popper="{ arrow: true }">
+          <UButton class="mr-2" color="red" icon="i-heroicons-stop" @click="stopCrawler(row)"/>
+        </UTooltip>
+        <UTooltip text="Restart Crawler (upcoming)" :popper="{ arrow: true }">
+          <UButton :disabled="true" class="mr-2" color="yellow" icon="i-heroicons-arrow-path" @click="stopCrawler(row)"/>
+        </UTooltip>
       </template>
       <template #empty-state>
         <div class="flex flex-col items-center justify-center py-6 gap-3">
@@ -59,7 +64,7 @@ const columns = [
   { key: 'status', label: 'Status' ,sortable: true},
   { key: 'start_date', label: 'Start Date',sortable: true },
   { key: 'end_date', label: 'End Date',sortable: true },
-  // { key: 'action', label: 'Action' },
+  { key: 'action', label: 'Action' },
   { key: 'logs', label: 'Logs'}
 ];
 
