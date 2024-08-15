@@ -29,6 +29,11 @@ func GenerateBinaryBuild(SiteID string, config *config.Config) error {
 		return fmt.Errorf("Error reading directory:", err)
 	}
 
+	cmd := exec.Command("sh", "-c", fmt.Sprintf("cd %s && git pull origin dev && git checkout dev", config.Manager.AppsDir))
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("Error building site: %v\nOutput: %s", err, output)
+	}
 	siteFound := false
 	for _, file := range files {
 		if file.IsDir() {
@@ -40,7 +45,7 @@ func GenerateBinaryBuild(SiteID string, config *config.Config) error {
 				sourcePath := fmt.Sprintf("%s/%s", config.Manager.AppsDir, dirname)
 				fmt.Println("sourcePath: ", sourcePath)
 				fmt.Println("outputPath: ", outputPath)
-				cmd := exec.Command("sh", "-c", fmt.Sprintf("cd %s && git pull && go build -o %s", sourcePath, outputPath))
+				cmd := exec.Command("sh", "-c", fmt.Sprintf("cd %s && go build -o %s", sourcePath, outputPath))
 				output, err := cmd.CombinedOutput()
 				if err != nil {
 					return fmt.Errorf("Error building site: %v\nOutput: %s", err, output)
