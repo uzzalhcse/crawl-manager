@@ -20,19 +20,47 @@
       sort-mode="manual"
     >
       <template #logs-data="{ row }">
-<!--        <UAccordion-->
-<!--            color="primary"-->
-<!--            variant="soft"-->
-<!--            size="sm"-->
-<!--            :items="[{ label: 'View', content: row.logs , icon: 'i-heroicons-document-text' }]"-->
-<!--        />-->
-        <UButton :to="`https://console.cloud.google.com/storage/browser/gen_crawled_data_venturas_asia-northeast1/maker/${row.site_id}/logs`" icon="i-heroicons-arrow-top-right-on-square"  target="_blank"></UButton>
-
+        <UButton v-if="row.status != 'running'" :to="`https://console.cloud.google.com/storage/browser/gen_crawled_data_venturas_asia-northeast1/maker/${row.site_id}/logs`" icon="i-heroicons-arrow-top-right-on-square"  target="_blank"></UButton>
+        <UBadge v-else color="red" label="N/A" />
       </template>
       <template #action-data="{ row }">
-        <UTooltip v-if="row.status == 'running'" text="Stop Crawler" :popper="{ arrow: true }">
-          <UButton class="mr-2" color="red" icon="i-heroicons-stop" @click="stopCrawler(row)"/>
-        </UTooltip>
+
+        <UPopover v-if="row.status == 'running'" class="inline-flex mr-2" overlay>
+          <UTooltip text="Stop Crawler" :popper="{ arrow: true }">
+            <UButton color="red" icon="i-heroicons-stop"/>
+          </UTooltip>
+          <template #panel="{ close }">
+            <UCard class="max-w-xs mx-auto flex flex-col items-center">
+              <!-- Icon and Message -->
+              <div class="flex items-center">
+                <i class="i-heroicons-exclamation-triangle text-yellow mr-2"></i>
+                <div class="font-semibold">
+                  Do you want to proceed with this action?
+                </div>
+              </div>
+
+              <!-- Buttons -->
+              <div class="mt-4 flex justify-end space-x-4 w-full">
+                <!-- Cancel Button -->
+                <UButton
+                    :disabled="loading"
+                    text="true"
+                    label="No, Thanks"
+                    size="2xs"
+                    @click="close"
+                />
+                <!-- Confirm Button -->
+                <UButton
+                    :loading="loading"
+                    label="OK"
+                    color="yellow"
+                    size="2xs"
+                    @click="() => { stopCrawler(row); }"
+                />
+              </div>
+            </UCard>
+          </template>
+        </UPopover>
         <UTooltip text="Restart Crawler (upcoming)" :popper="{ arrow: true }">
           <UButton :disabled="true" class="mr-2" color="yellow" icon="i-heroicons-arrow-path" @click="stopCrawler(row)"/>
         </UTooltip>

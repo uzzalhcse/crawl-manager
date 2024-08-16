@@ -125,9 +125,43 @@
       sort-mode="manual"
     >
       <template #action-data="{ row }">
-        <UTooltip class="mr-2" text="Run Manually" :popper="{ arrow: true }">
-          <UButton :loading="loading" color="green" icon="i-heroicons-play" @click="startCrawler(row)"/>
-        </UTooltip>
+        <UPopover class="inline-flex mr-2" overlay>
+          <UTooltip text="Run Manually" :popper="{ arrow: true }">
+            <UButton color="green" icon="i-heroicons-play" />
+          </UTooltip>
+          <template #panel="{ close }">
+            <UCard class="max-w-xs mx-auto flex flex-col items-center">
+              <!-- Icon and Message -->
+              <div class="flex items-center">
+                <i class="i-heroicons-exclamation-triangle text-yellow mr-2"></i>
+                <div class="font-semibold">
+                  Do you want to proceed with this action?
+                </div>
+              </div>
+
+              <!-- Buttons -->
+              <div class="mt-4 flex justify-end space-x-4 w-full">
+                <!-- Cancel Button -->
+                <UButton
+                    :disabled="loading"
+                    text="true"
+                    label="No, Thanks"
+                    size="2xs"
+                    @click="close"
+                />
+                <!-- Confirm Button -->
+                <UButton
+                    :loading="loading"
+                    label="OK"
+                    color="yellow"
+                    size="2xs"
+                    @click="() => { startCrawler(row); }"
+                />
+              </div>
+            </UCard>
+          </template>
+        </UPopover>
+
         <UTooltip class="mr-2" text="Env Secrets" :popper="{ arrow: true }">
           <UButton color="yellow" icon="i-heroicons-key" @click="handleSecret(row)"/>
         </UTooltip>
