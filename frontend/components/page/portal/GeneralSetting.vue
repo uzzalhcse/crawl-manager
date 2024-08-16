@@ -30,7 +30,7 @@
                 color="primary"
                 variant="outline"
                 placeholder="Dedault Env in JSON {}"
-                model-value="envForm.env"
+                v-model="envForm.env"
             />
           </UFormGroup>
 
