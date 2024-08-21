@@ -26,14 +26,19 @@ func GenerateBinaryBuild(SiteID string, config *config.Config) error {
 
 	files, err := os.ReadDir(config.Manager.AppsDir)
 	if err != nil {
-		return fmt.Errorf("Error reading directory:", err)
+		return fmt.Errorf("Error reading directory: %v", err)
 	}
 
+	// Pull the latest changes from the remote repository
 	cmd := exec.Command("sh", "-c", fmt.Sprintf("cd %s && git pull origin dev && git checkout dev", config.Manager.AppsDir))
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("Error building site: %v\nOutput: %s", err, output)
+		return fmt.Errorf("Error pulling latest changes: %v\nOutput: %s", err, output)
 	}
+
+	// Small delay to ensure the filesystem reflects the latest changes
+	time.Sleep(2 * time.Second)
+
 	siteFound := false
 	for _, file := range files {
 		if file.IsDir() {
@@ -53,8 +58,9 @@ func GenerateBinaryBuild(SiteID string, config *config.Config) error {
 			}
 		}
 	}
+
 	if !siteFound {
-		return fmt.Errorf("invalid site: %s", SiteID)
+		return fmt.Errorf("Invalid site: %s", SiteID)
 	}
 	return nil
 }
