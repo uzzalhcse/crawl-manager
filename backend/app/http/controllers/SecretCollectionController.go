@@ -64,7 +64,7 @@ func (ctrl *SecretCollectionController) GetEnvBySite(c *fiber.Ctx) error {
 		"API_USERNAME":         "lazuli",
 		"API_PASSWORD":         "ninja",
 		"GCP_CREDENTIALS_PATH": "/root/apps/gcp-file-upload-key.json",
-		"PROXY_SERVERS":        "http://35.243.121.253:3000,http://34.146.38.231:3000,http://34.85.121.208:3000,http://34.48.154.203:3000",
+		"PROXY_SERVERS":        "http://35.243.121.253:3000,http://34.146.38.231:3000",
 	}
 	if siteCollection != nil && siteCollection.Secrets != nil {
 		// Merge siteCollection.Secrets into defaultData
