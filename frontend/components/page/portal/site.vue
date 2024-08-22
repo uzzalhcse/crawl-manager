@@ -252,7 +252,7 @@ function resetItem(){
     name: "",
     url: "",
     status: "",
-    frequency:"",
+    frequency:"0 0 1 * *",
     vm_config: {
       cores:2,
       memory:4096,
