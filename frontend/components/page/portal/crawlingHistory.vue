@@ -20,6 +20,7 @@
       sort-mode="manual"
     >
       <template #logs-data="{ row }">
+        <UButton class="mr-2" color="red" icon="i-heroicons-clipboard-document-list" @click="isLogModalOpen=true" />
         <UButton v-if="row.status != 'running'" :to="`https://console.cloud.google.com/storage/browser/gen_crawled_data_venturas_asia-northeast1/maker/${row.site_id}/logs`" icon="i-heroicons-arrow-top-right-on-square"  target="_blank"></UButton>
         <UBadge v-else color="red" label="N/A" />
       </template>
@@ -71,6 +72,12 @@
         </div>
       </template>
     </UTable>
+
+    <PortalModal v-model="isLogModalOpen" :ui="{ width: 'sm:max-w-md' }" title="Summary Logs" prevent-close>
+      <pre>
+        {{logs}}
+      </pre>
+    </PortalModal>
   </div>
 </template>
 
@@ -85,6 +92,7 @@ const route = useRoute();
 const router = useRouter();
 const q = ref<string>('');
 const loading = ref<boolean>(false);
+const isLogModalOpen = ref<boolean>(false);
 const toast = useToast()
 const columns = [
   { key: 'site_id', label: 'Site', sortable: true },
@@ -96,6 +104,32 @@ const columns = [
   { key: 'logs', label: 'Logs'}
 ];
 
+const logs = [
+  {
+    msg:"Crawling Category",
+    time:"2024-09-01 1:30:00"
+  },
+  {
+    msg:"Total 15 Category Found",
+    time:"2024-09-01 3:15:00"
+  },
+  {
+    msg:"Crawling SubCategory",
+    time:"2024-09-01 3:15:00"
+  },
+  {
+    msg:"Total 256 SubCategory Found",
+    time:"2024-09-01 7:20:00"
+  },
+  {
+    msg:"Crawling Products",
+    time:"2024-09-01 7:20:00"
+  },
+  {
+    msg:"Total 5025 Products Found",
+    time:"2024-09-01 16:30:00"
+  },
+]
 
 const { data: item, pending: itemsPending, refresh } = await useSiteApi().crawlingHistory();
 async function stopCrawler(history:any) {
