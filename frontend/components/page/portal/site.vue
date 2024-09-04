@@ -23,6 +23,9 @@
         <UFormGroup label="Initial Url" name="url">
           <UInput v-model="site.url" type="text" />
         </UFormGroup>
+        <UFormGroup label="Git Branch (only for staging)" name="git_branch">
+          <UInput v-model="site.git_branch" type="text" placeholder="LZ-XX" />
+        </UFormGroup>
 
         <UFormGroup label="Frequency" name="frequency">
           <UInput v-model="site.frequency" type="text" />
@@ -71,6 +74,9 @@
           <UInput v-model="site.url" type="text" />
         </UFormGroup>
 
+        <UFormGroup label="Git Branch (only for staging)" name="git_branch">
+          <UInput v-model="site.git_branch" type="text" placeholder="LZ-XX" />
+        </UFormGroup>
 
         <UFormGroup label="Frequency" name="frequency">
           <UInput v-model="site.frequency" type="text" :disabled="true" />
@@ -212,6 +218,7 @@ const site = ref({
   url: "",
   frequency: "",
   status: "",
+  git_branch: "dev",
   vm_config: {
     cores:2,
     memory:4096,
@@ -252,6 +259,7 @@ function resetItem(){
     name: "",
     url: "",
     status: "",
+    git_branch: "dev",
     frequency:"0 0 1 * *",
     vm_config: {
       cores:2,

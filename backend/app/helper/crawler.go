@@ -16,8 +16,11 @@ import (
 	"time"
 )
 
-func GenerateBinaryBuild(SiteID string, config *config.Config) error {
-
+func GenerateBinaryBuild(siteCollection models.SiteCollection, config *config.Config) error {
+	GitBranch := siteCollection.GitBranch
+	if config.App.Env == "production" {
+		GitBranch = "dev"
+	}
 	// Get the absolute path of the parent directory
 	parentDir, err := filepath.Abs(config.Manager.DistDir)
 	if err != nil {
@@ -30,8 +33,9 @@ func GenerateBinaryBuild(SiteID string, config *config.Config) error {
 	}
 
 	// Pull the latest changes from the remote repository
-	cmd := exec.Command("sh", "-c", fmt.Sprintf("cd %s && git pull origin dev && git checkout dev", config.Manager.AppsDir))
+	cmd := exec.Command("sh", "-c", fmt.Sprintf("cd %s && git pull origin %s && git checkout %s", config.Manager.AppsDir, GitBranch, GitBranch))
 	output, err := cmd.CombinedOutput()
+	fmt.Println("git cmd output: ", string(output))
 	if err != nil {
 		return fmt.Errorf("Error pulling latest changes: %v\nOutput: %s", err, output)
 	}
@@ -43,7 +47,7 @@ func GenerateBinaryBuild(SiteID string, config *config.Config) error {
 	for _, file := range files {
 		if file.IsDir() {
 			dirname := file.Name()
-			if SiteID == dirname {
+			if siteCollection.SiteID == dirname {
 				siteFound = true
 				fmt.Printf("Generating Binary for: %s\n", dirname)
 				outputPath := filepath.Join(parentDir, "dist", dirname)
@@ -60,7 +64,7 @@ func GenerateBinaryBuild(SiteID string, config *config.Config) error {
 	}
 
 	if !siteFound {
-		return fmt.Errorf("Invalid site: %s", SiteID)
+		return fmt.Errorf("Invalid site: %s", siteCollection.SiteID)
 	}
 	return nil
 }

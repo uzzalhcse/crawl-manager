@@ -75,7 +75,7 @@ func (that *ManagerController) StartCrawler(c *fiber.Ctx) error {
 		return responses.Error(c, err.Error())
 	}
 
-	err = helper.GenerateBinaryBuild(siteID, that.Config)
+	err = helper.GenerateBinaryBuild(*siteCollection, that.Config)
 	if err != nil {
 		return responses.Error(c, err.Error())
 	}

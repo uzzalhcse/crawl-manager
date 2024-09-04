@@ -3,6 +3,7 @@ package models
 type SiteCollection struct {
 	SiteID    string   `json:"site_id" bson:"site_id"`
 	Url       string   `json:"url" bson:"url"`
+	GitBranch string   `json:"git_branch" bson:"git_branch"`
 	Status    string   `json:"status" bson:"status"`
 	Frequency string   `json:"frequency" bson:"frequency"`
 	VmConfig  VmConfig `json:"vm_config" bson:"vm_config"`
