@@ -57,17 +57,18 @@ func (ctrl *SecretCollectionController) GetEnvBySite(c *fiber.Ctx) error {
 
 	// Define default data
 	defaultData := map[string]interface{}{
-		"PROJECT_ID":           ctrl.Config.Manager.ProjectID,
-		"DB_USERNAME":          "lazuli",
-		"DB_PASSWORD":          "x1RWo6cqFtHiaAHce5HB",
-		"DB_HOST":              "localhost",
-		"DB_PORT":              27017,
-		"USER_AGENT":           "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-		"APP_ENV":              "production",
-		"API_USERNAME":         "lazuli",
-		"API_PASSWORD":         "ninja",
-		"GCP_CREDENTIALS_PATH": "/root/apps/gcp-file-upload-key.json",
-		"PROXY_SERVERS":        "http://35.243.121.253:3000,http://34.146.38.231:3000",
+		"PROJECT_ID":               ctrl.Config.Manager.ProjectID,
+		"DB_USERNAME":              "lazuli",
+		"DB_PASSWORD":              "x1RWo6cqFtHiaAHce5HB",
+		"DB_HOST":                  "localhost",
+		"DB_PORT":                  27017,
+		"USER_AGENT":               "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+		"APP_ENV":                  "production",
+		"API_USERNAME":             "lazuli",
+		"API_PASSWORD":             "ninja",
+		"GCP_CREDENTIALS_PATH":     "/root/apps/gcp-file-upload-key.json",
+		"GCP_LOG_CREDENTIALS_PATH": "/root/apps/gcp-log-key.json",
+		"PROXY_SERVERS":            "http://35.243.121.253:3000,http://34.146.38.231:3000",
 	}
 	if siteCollection != nil && siteCollection.Secrets != nil {
 		// Merge siteCollection.Secrets into defaultData
