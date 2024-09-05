@@ -33,7 +33,7 @@ func GenerateBinaryBuild(siteCollection models.SiteCollection, config *config.Co
 	}
 
 	// Pull the latest changes from the remote repository
-	cmd := exec.Command("sh", "-c", fmt.Sprintf("cd %s && git checkout dev && git reset --hard origin/dev && git pull origin %s && git checkout %s", config.Manager.AppsDir, GitBranch, GitBranch))
+	cmd := exec.Command("sh", "-c", fmt.Sprintf("cd %s && git checkout %s && git reset --hard origin/%s && git pull origin %s", config.Manager.AppsDir, GitBranch, GitBranch, GitBranch))
 	output, err := cmd.CombinedOutput()
 	fmt.Println("git cmd output: ", string(output))
 	if err != nil {
