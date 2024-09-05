@@ -10,10 +10,12 @@ import (
 
 type SecretCollectionController struct {
 	Service *services.SecretCollectionService
+	*BaseController
 }
 
 func NewSecretCollectionController(service *services.SecretCollectionService) *SecretCollectionController {
-	return &SecretCollectionController{Service: service}
+	that := NewBaseController()
+	return &SecretCollectionController{Service: service, BaseController: that}
 }
 
 func (ctrl *SecretCollectionController) Index(c *fiber.Ctx) error {
@@ -55,6 +57,7 @@ func (ctrl *SecretCollectionController) GetEnvBySite(c *fiber.Ctx) error {
 
 	// Define default data
 	defaultData := map[string]interface{}{
+		"PROJECT_ID":           ctrl.Config.Manager.ProjectID,
 		"DB_USERNAME":          "lazuli",
 		"DB_PASSWORD":          "x1RWo6cqFtHiaAHce5HB",
 		"DB_HOST":              "localhost",
