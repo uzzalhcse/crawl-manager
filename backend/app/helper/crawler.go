@@ -49,14 +49,14 @@ func GenerateBinaryBuild(siteCollection models.SiteCollection, config *config.Co
 		return fmt.Errorf("Error during git checkout: %v\nOutput: %s", err, output)
 	}
 
-	cmd = exec.Command("sh", "-c", fmt.Sprintf("cd %s && git pull origin %s", config.Manager.AppsDir, GitBranch))
+	// Use --ff-only to avoid divergence issues during git pull
+	cmd = exec.Command("sh", "-c", fmt.Sprintf("cd %s && git pull --ff-only origin %s", config.Manager.AppsDir, GitBranch))
 	output, err = cmd.CombinedOutput()
 	fmt.Println("git pull output: ", string(output))
 
 	if err != nil {
 		return fmt.Errorf("Error during git pull: %v\nOutput: %s", err, output)
 	}
-
 	// Small delay to ensure the filesystem reflects the latest changes
 	time.Sleep(3 * time.Second)
 
