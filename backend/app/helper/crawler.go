@@ -140,7 +140,7 @@ func CreateVM(siteCollection models.SiteCollection, config *config.Config) (stri
 				},
 				{
 					"key":   "startup-script",
-					"value": fmt.Sprintf("#! /bin/bash\nSiteID=\"%s\"\ninstanceName=\"%s\"\nulimit -n 1000000\ncd /root/apps\ncurl -O http://%s:8080/binary/$SiteID\nchmod +x $SiteID\ncurl -s http://%s:8080/api/site-secret/env/$SiteID > .env\nsudo ./$SiteID\ncurl http://%s:8080/api/stop-crawler/$instanceName", siteCollection.SiteID, instanceName, config.Manager.ServerIP, config.Manager.ServerIP, config.Manager.ServerIP),
+					"value": fmt.Sprintf("#! /bin/bash\nSiteID=\"%s\"\ninstanceName=\"%s\"\nulimit -n 1000000\ncd /root/apps\ncurl -O %s/binary/$SiteID\nchmod +x $SiteID\ncurl -s %s/api/site-secret/env/$SiteID > .env\nsudo ./$SiteID\n", siteCollection.SiteID, instanceName, config.Manager.ServerIP, config.Manager.ServerIP),
 				},
 			},
 		},

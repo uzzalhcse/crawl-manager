@@ -65,7 +65,7 @@ func CreateSchedulerJob(config *config.Config, frequency, siteName string) error
 		"schedule": frequency,
 		"timeZone": "UTC",
 		"httpTarget": map[string]interface{}{
-			"uri":        fmt.Sprintf("http://%s:8080/api/start-crawler/%s", config.Manager.ServerIP, siteName),
+			"uri":        fmt.Sprintf("%s/api/start-crawler/%s", config.Manager.ServerIP, siteName),
 			"httpMethod": "GET",
 			"headers": map[string]string{
 				"Content-Type": "application/json",
@@ -120,7 +120,7 @@ func UpdateSchedulerJob(config *config.Config, frequency, siteName string) error
 		"schedule": frequency,
 		"timeZone": "UTC",
 		"httpTarget": map[string]interface{}{
-			"uri":        fmt.Sprintf("http://%s:8080/api/start-crawler/%s", config.Manager.ServerIP, siteName),
+			"uri":        fmt.Sprintf("%s/api/start-crawler/%s", config.Manager.ServerIP, siteName),
 			"httpMethod": "GET",
 			"headers": map[string]string{
 				"Content-Type": "application/json",
