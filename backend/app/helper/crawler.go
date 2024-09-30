@@ -2,6 +2,7 @@ package helper
 
 import (
 	"bytes"
+	"cloud.google.com/go/compute/metadata"
 	"crawl-manager-backend/app/models"
 	"crawl-manager-backend/config"
 	"encoding/json"
@@ -93,6 +94,11 @@ func CreateVM(siteCollection models.SiteCollection, config *config.Config) (stri
 	sanitizedSiteID := strings.ReplaceAll(siteCollection.SiteID, "_", "-")
 
 	instanceName := sanitizedSiteID + "-" + dateTime
+
+	if !metadata.OnGCE() {
+		return instanceName, nil
+	}
+
 	machineType := fmt.Sprintf("projects/%s/zones/%s/machineTypes/e2-custom-%d-%d", config.Manager.ProjectID, siteCollection.VmConfig.Zone, siteCollection.VmConfig.Cores, siteCollection.VmConfig.Memory)
 	// Get gcloud access token
 	cmd := exec.Command("gcloud", "auth", "print-access-token")

@@ -35,6 +35,9 @@
           </template>
         </UFormGroup>
 
+        <UFormGroup label="Status" name="status">
+          <USelectMenu v-model="site.status" :options="['active', 'inactive']" :ui-menu="{ select: 'capitalize', option: { base: 'capitalize' } }" />
+        </UFormGroup>
 <!--        <UFormGroup label="Number of Crawling Per month" name="no_of_crawling_per_month">-->
 <!--          <USelectMenu v-model="site.no_of_crawling_per_month" :options="[-->
 <!--     { value: 1, label: '1 time' },-->
@@ -67,7 +70,7 @@
     <PortalModal v-model="isEditModalOpen" :ui="{ width: 'sm:max-w-md' }" description="Edit a site" title="Edit site" prevent-close>
       <UForm :state="site" :validate="validate" :validate-on="['submit']" class="space-y-4" @submit="updateItem">
         <UFormGroup label="Site ID" name="site_id">
-          <UInput v-model="site.site_id" autofocus type="text" :disabled="true"/>
+          <UInput v-model="site.site_id" autofocus type="text"/>
         </UFormGroup>
 
         <UFormGroup label="Initial Url" name="url">
@@ -84,6 +87,10 @@
             Schedules are specified using unix-cron format. E.g. every minute: "* * * * *", every 3 hours: "0 */3 * * *", every Monday at 9:00: "0 9 * * 1"
             <UButton size="2xs" to="https://cloud.google.com/scheduler/docs/configuring/cron-job-schedules" icon="i-heroicons-arrow-top-right-on-square"  target="_blank">Learn More</UButton>
           </template>
+        </UFormGroup>
+
+        <UFormGroup label="Status" name="status">
+          <USelectMenu v-model="site.status" :options="['active', 'inactive']" :ui-menu="{ select: 'capitalize', option: { base: 'capitalize' } }" />
         </UFormGroup>
         <h2 class="font-black">VM Config</h2>
         <UFormGroup label="Cores" name="cores">
@@ -161,7 +168,7 @@
                     label="OK"
                     color="yellow"
                     size="2xs"
-                    @click="() => { startCrawler(row); }"
+                    @click="() => { startCrawler(row).finally(() => close()); }"
                 />
               </div>
             </UCard>
@@ -206,6 +213,7 @@ const toast = useToast()
 const columns = [
   { key: 'site_id', label: 'Name', sortable: true },
   { key: 'url', label: 'Url' },
+  { key: 'status', label: 'Status' },
   { key: 'frequency', label: 'Crawling Frequency' },
   { key: 'vm_config', label: 'VM Config' },
   { key: 'action', label: 'Action' }
@@ -217,7 +225,7 @@ const site = ref({
   name: "",
   url: "",
   frequency: "",
-  status: "",
+  status: "active",
   git_branch: "dev",
   vm_config: {
     cores:2,
@@ -258,7 +266,7 @@ function resetItem(){
     site_id: "",
     name: "",
     url: "",
-    status: "",
+    status: "active",
     git_branch: "dev",
     frequency:"0 0 1 * *",
     vm_config: {

@@ -74,6 +74,9 @@ func (that *ManagerController) StartCrawler(c *fiber.Ctx) error {
 	if err != nil {
 		return responses.Error(c, err.Error())
 	}
+	if siteCollection.Status != "active" {
+		return responses.Error(c, fmt.Sprintf("%s Crawler is not active", siteCollection.SiteID))
+	}
 
 	err = helper.GenerateBinaryBuild(*siteCollection, that.Config)
 	if err != nil {
