@@ -18,39 +18,40 @@ import (
 )
 
 func GenerateBinaryBuild(siteCollection models.SiteCollection, config *config.Config) error {
-	GitBranch := siteCollection.GitBranch
-	if config.App.Env == "production" {
-		GitBranch = "dev"
+	GitBranch := "dev"
+	if config.App.Env != "production" {
+		GitBranch = siteCollection.GitBranch
 	}
+
 	// Get the absolute path of the parent directory
 	parentDir, err := filepath.Abs(config.Manager.DistDir)
 	if err != nil {
 		return fmt.Errorf("Error getting parent directory: %v", err)
 	}
 
+	// Check if directory exists
 	files, err := os.ReadDir(config.Manager.AppsDir)
 	if err != nil {
 		return fmt.Errorf("Error reading directory: %v", err)
 	}
 
-	// Pull the latest changes from the remote repository
-	cmd := exec.Command("sh", "-c", fmt.Sprintf("cd %s && git checkout dev && git fetch origin && git checkout %s", config.Manager.AppsDir, GitBranch))
+	// Execute git commands: checkout and pull in one step to avoid redundancy
+	commands := []string{
+		fmt.Sprintf("cd %s", config.Manager.AppsDir),
+		fmt.Sprintf("git checkout %s", GitBranch),
+		"git fetch origin",
+		fmt.Sprintf("git pull origin %s --ff-only", GitBranch),
+	}
+
+	cmd := exec.Command("sh", "-c", strings.Join(commands, " && "))
 	output, err := cmd.CombinedOutput()
-	fmt.Println("git reset output: ", string(output))
+	fmt.Println("git output: ", string(output))
 
 	if err != nil {
-		return fmt.Errorf("Error during git reset: %v\nOutput: %s", err, output)
+		return fmt.Errorf("Error during git operations: %v\nOutput: %s", err, output)
 	}
 
-	// Use --ff-only to avoid divergence issues during git pull
-	cmd = exec.Command("sh", "-c", fmt.Sprintf("cd %s && git pull origin %s", config.Manager.AppsDir, GitBranch))
-	output, err = cmd.CombinedOutput()
-	fmt.Println("git pull output: ", string(output))
-
-	if err != nil {
-		return fmt.Errorf("Error during git pull: %v\nOutput: %s", err, output)
-	}
-	// Small delay to ensure the filesystem reflects the latest changes
+	// Small delay to ensure filesystem changes are reflected
 	time.Sleep(3 * time.Second)
 
 	siteFound := false
