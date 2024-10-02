@@ -43,7 +43,7 @@ func GenerateBinaryBuild(siteCollection models.SiteCollection, config *config.Co
 	}
 
 	// Use --ff-only to avoid divergence issues during git pull
-	cmd = exec.Command("sh", "-c", fmt.Sprintf("cd %s && git pull --ff-only origin %s", config.Manager.AppsDir, GitBranch))
+	cmd = exec.Command("sh", "-c", fmt.Sprintf("cd %s && git pull origin %s", config.Manager.AppsDir, GitBranch))
 	output, err = cmd.CombinedOutput()
 	fmt.Println("git pull output: ", string(output))
 
