@@ -35,12 +35,13 @@ func GenerateBinaryBuild(siteCollection models.SiteCollection, config *config.Co
 		return fmt.Errorf("Error reading directory: %v", err)
 	}
 
-	// Execute git commands: checkout and pull in one step to avoid redundancy
+	// Execute git commands to discard local changes and pull the latest from the remote
 	commands := []string{
 		fmt.Sprintf("cd %s", config.Manager.AppsDir),
-		fmt.Sprintf("git checkout %s", GitBranch),
-		"git fetch origin",
-		fmt.Sprintf("git pull origin %s --ff-only", GitBranch),
+		fmt.Sprintf("git checkout %s", GitBranch),              // Checkout the branch
+		"git fetch origin",                                     // Fetch latest changes
+		fmt.Sprintf("git reset --hard origin/%s", GitBranch),   // Reset local changes to remote
+		fmt.Sprintf("git pull origin %s --ff-only", GitBranch), // Pull the latest changes
 	}
 
 	cmd := exec.Command("sh", "-c", strings.Join(commands, " && "))
