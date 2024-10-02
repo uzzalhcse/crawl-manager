@@ -34,20 +34,12 @@ func GenerateBinaryBuild(siteCollection models.SiteCollection, config *config.Co
 	}
 
 	// Pull the latest changes from the remote repository
-	cmd := exec.Command("sh", "-c", fmt.Sprintf("cd %s && git fetch origin && git reset --hard origin/%s", config.Manager.AppsDir, GitBranch))
+	cmd := exec.Command("sh", "-c", fmt.Sprintf("cd %s && git checkout dev && git fetch origin && git checkout %s", config.Manager.AppsDir, GitBranch))
 	output, err := cmd.CombinedOutput()
 	fmt.Println("git reset output: ", string(output))
 
 	if err != nil {
 		return fmt.Errorf("Error during git reset: %v\nOutput: %s", err, output)
-	}
-
-	cmd = exec.Command("sh", "-c", fmt.Sprintf("cd %s && git checkout %s", config.Manager.AppsDir, GitBranch))
-	output, err = cmd.CombinedOutput()
-	fmt.Println("git checkout output: ", string(output))
-
-	if err != nil {
-		return fmt.Errorf("Error during git checkout: %v\nOutput: %s", err, output)
 	}
 
 	// Use --ff-only to avoid divergence issues during git pull

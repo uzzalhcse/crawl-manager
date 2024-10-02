@@ -64,7 +64,7 @@ func (ctrl *SecretCollectionController) GetEnvBySite(c *fiber.Ctx) error {
 		"DB_HOST":                  "localhost",
 		"DB_PORT":                  27017,
 		"USER_AGENT":               "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-		"APP_ENV":                  "production",
+		"APP_ENV":                  ctrl.Config.App.Env,
 		"API_USERNAME":             "lazuli",
 		"API_PASSWORD":             "ninja",
 		"GCP_CREDENTIALS_PATH":     "/root/apps/gcp-file-upload-key.json",
