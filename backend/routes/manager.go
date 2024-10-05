@@ -9,6 +9,7 @@ func SetUpManagerRoutes(api fiber.Router) {
 	managerController := controllers.NewManagerController()
 	// Define routes
 	api.Get("/start-crawler/:SiteID", managerController.StartCrawler)
+	api.Get("/build-crawler/:SiteID", managerController.BuildCrawler)
 	api.Get("/stop-crawler/:instanceName", managerController.StopCrawler)
 	api.Get("/crawling-history", managerController.CrawlingHistory)
 }

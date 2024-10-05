@@ -100,6 +100,22 @@ func (that *ManagerController) StartCrawler(c *fiber.Ctx) error {
 	}
 	return responses.Success(c, "Crawler Started Successfully")
 }
+func (that *ManagerController) BuildCrawler(c *fiber.Ctx) error {
+	siteID := c.Params("siteID")
+	siteCollection, err := that.siteService.GetByID(siteID)
+	if err != nil {
+		return responses.Error(c, err.Error())
+	}
+	if siteCollection.Status != "active" {
+		return responses.Error(c, fmt.Sprintf("%s Crawler is not active", siteCollection.SiteID))
+	}
+
+	err = helper.GenerateBinaryBuild(*siteCollection, that.Config)
+	if err != nil {
+		return responses.Error(c, err.Error())
+	}
+	return responses.Success(c, "Crawler Build Successfully")
+}
 func (that *ManagerController) CrawlingHistory(c *fiber.Ctx) error {
 
 	crawlingHistory, err := that.siteService.GetCrawlingHistory()
