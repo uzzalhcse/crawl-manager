@@ -21,8 +21,7 @@
     >
       <template #logs-data="{ row }">
         <UButton class="mr-2" color="red" icon="i-heroicons-clipboard-document-list" @click="isLogModalOpen=true" />
-        <UButton v-if="row.status != 'running'" :to="row.log_url" icon="i-heroicons-arrow-top-right-on-square"  target="_blank"></UButton>
-        <UBadge v-else color="red" label="N/A" />
+        <UButton :to="row.log_url" icon="i-heroicons-arrow-top-right-on-square"  target="_blank"></UButton>
       </template>
       <template #action-data="{ row }">
 
