@@ -88,7 +88,10 @@ func (that *ManagerController) StartCrawler(c *fiber.Ctx) error {
 		return responses.Error(c, err.Error())
 	}
 	fmt.Println("instanceName: ", instanceName)
-	logUrl := fmt.Sprintf(`https://console.cloud.google.com/logs/query;query=resource.type="gce_instance" AND resource.labels.instance_id="%s" AND logName="projects/%s/logs/google_metadata_script_runner"`, instanceID, that.Config.Manager.ProjectID)
+	logUrl := fmt.Sprintf(
+		`https://console.cloud.google.com/logs/query;query=resource.type%%3D%%22gce_instance%%22%%0Aresource.labels.instance_id%%3D%%22%s%%22%%0AlogName%%3D%%22projects%%2F%s%%2Flogs%%2Fgoogle_metadata_script_runner%%22;?project=%s`,
+		instanceID, that.Config.Manager.ProjectID, that.Config.Manager.ProjectID,
+	)
 	err = that.siteService.CreateCrawlingHistory(&models.CrawlingHistory{
 		SiteID:       siteID,
 		Status:       "running",
