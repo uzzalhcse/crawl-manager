@@ -83,7 +83,7 @@ func (that *ManagerController) StartCrawler(c *fiber.Ctx) error {
 		return responses.Error(c, err.Error())
 	}
 	fmt.Println("Creating VM for: ", siteID)
-	instanceName, err := helper.CreateVM(*siteCollection, that.Config)
+	instanceName, instanceID, err := helper.CreateVM(*siteCollection, that.Config)
 	if err != nil {
 		return responses.Error(c, err.Error())
 	}
@@ -92,6 +92,7 @@ func (that *ManagerController) StartCrawler(c *fiber.Ctx) error {
 		SiteID:       siteID,
 		Status:       "running",
 		InstanceName: instanceName,
+		InstanceID:   instanceID,
 		Site:         siteCollection,
 		StartDate:    time.Now().Format("2006-01-02 15:04:05"),
 	})

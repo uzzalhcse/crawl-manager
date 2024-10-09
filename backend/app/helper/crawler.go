@@ -81,16 +81,17 @@ func GenerateBinaryBuild(siteCollection models.SiteCollection, config *config.Co
 	return nil
 }
 
-func CreateVM(siteCollection models.SiteCollection, config *config.Config) (string, error) {
+func CreateVM(siteCollection models.SiteCollection, config *config.Config) (string, string, error) {
 	//projectID := "lazuli-venturas"
 	//region := "asia-northeast1"
 	dateTime := time.Now().Format("2006-01-02-15-04-05")
 	sanitizedSiteID := strings.ReplaceAll(siteCollection.SiteID, "_", "-")
 
 	instanceName := sanitizedSiteID + "-" + dateTime
+	instanceID := ""
 
 	if !metadata.OnGCE() {
-		return instanceName, nil
+		return instanceName, instanceID, nil
 	}
 
 	machineType := fmt.Sprintf("projects/%s/zones/%s/machineTypes/e2-custom-%d-%d", config.Manager.ProjectID, siteCollection.VmConfig.Zone, siteCollection.VmConfig.Cores, siteCollection.VmConfig.Memory)
@@ -195,14 +196,14 @@ func CreateVM(siteCollection models.SiteCollection, config *config.Config) (stri
 	// Marshal the request body to JSON
 	requestBody, err := json.Marshal(vmRequestBody)
 	if err != nil {
-		return "", fmt.Errorf("error marshaling JSON request body: %v", err)
+		return "", "", fmt.Errorf("error marshaling JSON request body: %v", err)
 	}
 
 	// Send the request to create the VM
 	url := fmt.Sprintf("https://compute.googleapis.com/compute/v1/projects/%s/zones/%s/instances", config.Manager.ProjectID, siteCollection.VmConfig.Zone)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
 	if err != nil {
-		return "", fmt.Errorf("error creating HTTP request: %v", err)
+		return "", "", fmt.Errorf("error creating HTTP request: %v", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+accessToken)
@@ -210,7 +211,7 @@ func CreateVM(siteCollection models.SiteCollection, config *config.Config) (stri
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("error sending request to create instance: %v", err)
+		return "", "", fmt.Errorf("error sending request to create instance: %v", err)
 	}
 	defer resp.Body.Close()
 
@@ -218,9 +219,19 @@ func CreateVM(siteCollection models.SiteCollection, config *config.Config) (stri
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		fmt.Printf("unexpected response status: %s\n", resp.Status)
 		fmt.Printf("Response Headers: %v\n", resp.Header)
-		return "", fmt.Errorf("unexpected response %s", string(respBody))
+		return "", "", fmt.Errorf("unexpected response %s", string(respBody))
 	}
 
 	fmt.Printf("Response Body: %s\n", string(respBody))
-	return instanceName, nil
+	var respData map[string]interface{}
+	if err := json.Unmarshal(respBody, &respData); err != nil {
+		return "", "", fmt.Errorf("error unmarshaling response JSON: %v", err)
+	}
+
+	// The instance ID is usually available in the "id" field of the response
+	if targetId, ok := respData["targetId"].(string); ok {
+		fmt.Printf("Instance created with ID: %s\n", targetId)
+		instanceID = targetId
+	}
+	return instanceName, instanceID, nil
 }
