@@ -214,13 +214,13 @@ func CreateVM(siteCollection models.SiteCollection, config *config.Config) (stri
 	}
 	defer resp.Body.Close()
 
+	respBody, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		fmt.Printf("unexpected response status: %s\n", resp.Status)
 		fmt.Printf("Response Headers: %v\n", resp.Header)
-		respBody, _ := io.ReadAll(resp.Body)
-		fmt.Printf("Response Body: %s\n", string(respBody))
 		return "", fmt.Errorf("unexpected response %s", string(respBody))
 	}
 
+	fmt.Printf("Response Body: %s\n", string(respBody))
 	return instanceName, nil
 }
