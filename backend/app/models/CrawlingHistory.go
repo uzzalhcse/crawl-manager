@@ -9,6 +9,7 @@ type CrawlingHistory struct {
 	EndDate      string          `json:"end_date" bson:"end_date"`           // 2024-08-20
 	Site         *SiteCollection `json:"site" bson:"site"`
 	Logs         string          `json:"logs" bson:"logs"`
+	LogUrl       string          `json:"log_url" bson:"log_url"`
 }
 
 func (c *CrawlingHistory) GetTableName() string {
