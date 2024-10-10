@@ -139,7 +139,7 @@
     >
       <template #action-data="{ row }">
         <UPopover class="inline-flex mr-2" overlay>
-          <UTooltip text="Run Manually" :popper="{ arrow: true }">
+          <UTooltip text="Run Crawler" :popper="{ arrow: true }">
             <UButton color="green" icon="i-heroicons-play" />
           </UTooltip>
           <template #panel="{ close }">
@@ -175,6 +175,9 @@
           </template>
         </UPopover>
 
+        <UTooltip class="mr-2" text="Build Binary" :popper="{ arrow: true }">
+          <UButton color="blue" icon="i-heroicons-wrench-screwdriver" :loading="row.loading" @click="buildCrawler(row)"/>
+        </UTooltip>
         <UTooltip class="mr-2" text="Env Secrets" :popper="{ arrow: true }">
           <UButton color="yellow" icon="i-heroicons-key" @click="handleSecret(row)"/>
         </UTooltip>
@@ -286,6 +289,17 @@ function handleEdit(row:any) {
     site.value = row
   }
   isEditModalOpen.value = !isEditModalOpen.value;
+}
+async function buildCrawler(site: any) {
+  if (site.site_id){
+    site.loading = true
+    useSiteApi().buildCrawler(site.site_id).then(res=>{
+      console.log('res', res.data.value)
+      toast.add({ title: "Binary Build Success" })
+      site.loading = false
+    })
+  }
+
 }
 async function handleSecret(site: any) {
   if (site.site_id){

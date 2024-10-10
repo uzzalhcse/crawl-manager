@@ -11,6 +11,7 @@ export function useSiteApi() {
   const updateSecrets = (payload: any,site_id:string) => useApi(`/api/site-secret/${site_id}`,{ method:'PUT',body:JSON.stringify(payload) })
   const startCrawler = (site_id:string) => useApi(`/api/start-crawler/${site_id}`);
   const stopCrawler = (instance_name:string) => useApi(`/api/stop-crawler/${instance_name}`);
+  const buildCrawler = (site_id:string) => useApi(`/api/build-crawler/${site_id}`);
   const crawlingHistory = () => useApi(`/api/crawling-history`);
   return {
     findAll,
@@ -22,6 +23,7 @@ export function useSiteApi() {
     updateSecrets,
     startCrawler,
     crawlingHistory,
-    stopCrawler
+    stopCrawler,
+    buildCrawler
   };
 }
