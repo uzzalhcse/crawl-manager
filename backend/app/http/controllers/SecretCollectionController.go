@@ -73,7 +73,7 @@ func (ctrl *SecretCollectionController) GetEnvBySite(c *fiber.Ctx) error {
 		"BIGQUERY_DATASET":         "data_source",
 		"UPLOAD_LOGS":              "false",
 		"PROXY_SERVERS":            "",
-		//"PROXY_SERVERS":            "http://35.243.121.253:3000,http://34.146.38.231:3000",
+		"LOG_TO_GCP":               "true",
 	}
 	if siteCollection != nil && siteCollection.Secrets != nil {
 		// Merge siteCollection.Secrets into defaultData
