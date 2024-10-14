@@ -14,45 +14,51 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 )
 
+var (
+	gitMutex = &sync.Mutex{}          // Mutex to synchronize git operations
+	buildSem = make(chan struct{}, 5) // Limit to 5 concurrent builds
+)
+
 func GenerateBinaryBuild(siteCollection models.SiteCollection, config *config.Config) error {
+	buildSem <- struct{}{}
+	defer func() { <-buildSem }()
+
 	GitBranch := "dev"
 	if config.App.Env != "production" {
 		GitBranch = siteCollection.GitBranch
 	}
 
-	// Get the absolute path of the parent directory
+	gitMutex.Lock()
+	defer gitMutex.Unlock()
+
 	parentDir, err := filepath.Abs(config.Manager.DistDir)
 	if err != nil {
 		return fmt.Errorf("Error getting parent directory: %v", err)
 	}
 
-	// Check if directory exists
 	files, err := os.ReadDir(config.Manager.AppsDir)
 	if err != nil {
 		return fmt.Errorf("Error reading directory: %v", err)
 	}
 
-	// Execute git commands to discard local changes and pull the latest from the remote
 	commands := []string{
 		fmt.Sprintf("cd %s", config.Manager.AppsDir),
-		"git fetch origin",                                     // Fetch latest changes
-		fmt.Sprintf("git checkout %s", GitBranch),              // Checkout the branch
-		fmt.Sprintf("git reset --hard origin/%s", GitBranch),   // Reset local changes to remote
-		fmt.Sprintf("git pull origin %s --ff-only", GitBranch), // Pull the latest changes
+		"git fetch origin",
+		fmt.Sprintf("git checkout %s", GitBranch),
+		fmt.Sprintf("git reset --hard origin/%s", GitBranch),
+		fmt.Sprintf("git pull origin %s --ff-only", GitBranch),
 	}
-
 	cmd := exec.Command("sh", "-c", strings.Join(commands, " && "))
 	output, err := cmd.CombinedOutput()
 	fmt.Println("git output: ", string(output))
-
 	if err != nil {
 		return fmt.Errorf("Error during git operations: %v\nOutput: %s", err, output)
 	}
 
-	// Small delay to ensure filesystem changes are reflected
 	time.Sleep(3 * time.Second)
 
 	siteFound := false
@@ -64,12 +70,32 @@ func GenerateBinaryBuild(siteCollection models.SiteCollection, config *config.Co
 				fmt.Printf("Generating Binary for: %s\n", dirname)
 				outputPath := filepath.Join(parentDir, "dist", dirname)
 				sourcePath := fmt.Sprintf("%s/%s", config.Manager.AppsDir, dirname)
-				fmt.Println("sourcePath: ", sourcePath)
-				fmt.Println("outputPath: ", outputPath)
-				cmd := exec.Command("sh", "-c", fmt.Sprintf("cd %s && go build -o %s", sourcePath, outputPath))
-				output, err := cmd.CombinedOutput()
+
+				// Ensure the log directory exists
+				logDir := filepath.Join(parentDir, "storage", "logs", dirname)
+				err = os.MkdirAll(logDir, 0755) // Create the log directory (and parent directories) if it doesn't exist
 				if err != nil {
-					return fmt.Errorf("Error building site: %v\nOutput: %s", err, output)
+					return fmt.Errorf("Error creating log directory: %v", err)
+				}
+
+				// Create log file path
+				logFile := filepath.Join(logDir, fmt.Sprintf("build_logs_%s.txt", siteCollection.SiteID))
+				buildCmd := exec.Command("sh", "-c", fmt.Sprintf("cd %s && go build -o %s", sourcePath, outputPath))
+
+				// Open the log file
+				buildOutput, err := os.Create(logFile)
+				if err != nil {
+					return fmt.Errorf("Error creating log file: %v", err)
+				}
+				defer buildOutput.Close()
+
+				// Redirect stdout and stderr to the log file
+				buildCmd.Stdout = buildOutput
+				buildCmd.Stderr = buildOutput
+
+				err = buildCmd.Run()
+				if err != nil {
+					return fmt.Errorf("Error building site: %v\nCheck log: %s", err, logFile)
 				}
 			}
 		}
@@ -80,7 +106,6 @@ func GenerateBinaryBuild(siteCollection models.SiteCollection, config *config.Co
 	}
 	return nil
 }
-
 func CreateVM(siteCollection models.SiteCollection, config *config.Config) (string, string, error) {
 	//projectID := "lazuli-venturas"
 	//region := "asia-northeast1"
