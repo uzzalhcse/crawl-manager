@@ -8,7 +8,7 @@
         </h1>
       </template>
       <template #right>
-
+        <UInput v-model="q" placeholder="Filter site..." class="ml-auto" />
         <UButton color="gray" label="New Site" trailing-icon="i-heroicons-plus" @click="handleAdd" />
       </template>
 
@@ -132,7 +132,7 @@
       :columns="columns"
       :loading="itemsPending"
       :progress="{ color: 'primary', animation: 'carousel' }"
-      :rows="item"
+      :rows="filteredRows"
       :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
       class="w-full"
       sort-mode="manual"
@@ -253,7 +253,18 @@ const validate = (state: Site): FormError[] => {
   if (!state.vm_config.disk) errors.push({ path: 'disk', message: 'Please enter disk.' })
   return errors
 }
-const { data: item, pending: itemsPending, refresh } = await useSiteApi().findAll({ page, limit });
+const filteredRows = computed(() => {
+  if (!q.value) {
+    return items.value; // Return all items if search query is empty
+  }
+
+  return items.value.filter((site: Site) => {
+    return Object.values(site).some((value) => {
+      return String(value).toLowerCase().includes(q.value.toLowerCase());
+    });
+  });
+});
+const { data: items, pending: itemsPending, refresh } = await useSiteApi().findAll({ page, limit });
 watch(page, (newValue) => {
   updatePage(newValue);
 });

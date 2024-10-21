@@ -116,7 +116,11 @@ func (r *Repository) GetCrawlingHistory() ([]models.CrawlingHistory, error) {
 
 	crwCollection := []models.CrawlingHistory{}
 
-	cursor, err := collection.Find(ctx, bson.M{})
+	// Use MongoDB sort to get the latest data based on StartDate
+	findOptions := options.Find()
+	findOptions.SetSort(bson.D{{"start_date", -1}}) // Sort by StartDate in descending order
+
+	cursor, err := collection.Find(ctx, bson.M{}, findOptions)
 	if err != nil {
 		return nil, err
 	}

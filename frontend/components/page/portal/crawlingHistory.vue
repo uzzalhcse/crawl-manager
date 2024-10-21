@@ -7,14 +7,18 @@
           <span class="truncate">Crawling History</span>
         </h1>
       </template>
+      <template #right>
+        <div class="flex px-3 py-3.5 border-gray-200 dark:border-gray-700">
+          <UInput v-model="q" placeholder="Filter History..." />
+        </div>
+      </template>
 
     </DashboardToolbar>
-
     <UTable
       :columns="columns"
       :loading="itemsPending"
       :progress="{ color: 'primary', animation: 'carousel' }"
-      :rows="item"
+      :rows="filteredRows"
       :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
       class="w-full"
       sort-mode="manual"
@@ -105,32 +109,20 @@ const columns = [
 
 const logs = [
   {
-    msg:"Crawling Category",
-    time:"2024-09-01 1:30:00"
-  },
-  {
-    msg:"Total 15 Category Found",
-    time:"2024-09-01 3:15:00"
-  },
-  {
-    msg:"Crawling SubCategory",
-    time:"2024-09-01 3:15:00"
-  },
-  {
-    msg:"Total 256 SubCategory Found",
-    time:"2024-09-01 7:20:00"
-  },
-  {
-    msg:"Crawling Products",
-    time:"2024-09-01 7:20:00"
-  },
-  {
-    msg:"Total 5025 Products Found",
-    time:"2024-09-01 16:30:00"
   },
 ]
+const filteredRows = computed(() => {
+  if (!q.value) {
+    return items.value; // Return all items if search query is empty
+  }
 
-const { data: item, pending: itemsPending, refresh } = await useSiteApi().crawlingHistory();
+  return items.value.filter((site: any) => {
+    return Object.values(site).some((value) => {
+      return String(value).toLowerCase().includes(q.value.toLowerCase());
+    });
+  });
+});
+const { data: items, pending: itemsPending, refresh } = await useSiteApi().crawlingHistory();
 async function stopCrawler(history:any) {
   loading.value = true
   await useSiteApi().stopCrawler(history.instance_name).then(res=>{
