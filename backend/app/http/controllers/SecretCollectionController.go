@@ -67,6 +67,7 @@ func (ctrl *SecretCollectionController) GetEnvBySite(c *fiber.Ctx) error {
 		"APP_ENV":                  ctrl.Config.App.Env,
 		"API_USERNAME":             "lazuli",
 		"API_PASSWORD":             "ninja",
+		"GCP_BUCKET_NAME":          ctrl.Config.Manager.GcpBucketName,
 		"GCP_CREDENTIALS_PATH":     "/root/apps/gcp-file-upload-key.json",
 		"GCP_LOG_CREDENTIALS_PATH": "/root/apps/gcp-log-key.json",
 		"GCP_SERVICE_ACCOUNT":      ctrl.Config.Manager.ServiceAccountCredentials,

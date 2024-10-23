@@ -10,6 +10,7 @@ type ManagerConfig struct {
 	ServerIP                  string
 	ServiceAccountEmail       string
 	ServiceAccountCredentials string
+	GcpBucketName             string
 }
 
 func loadManagerConfig() ManagerConfig {
@@ -21,5 +22,6 @@ func loadManagerConfig() ManagerConfig {
 		ServerIP:                  viper.GetString("SERVER_IP"),
 		ServiceAccountEmail:       viper.GetString("SERVICE_ACCOUNT_EMAIL"),
 		ServiceAccountCredentials: viper.GetString("GCP_SERVICE_ACCOUNT"),
+		GcpBucketName:             viper.GetString("GCP_BUCKET_NAME"),
 	}
 }
