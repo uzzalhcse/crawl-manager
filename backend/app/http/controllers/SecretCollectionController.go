@@ -75,7 +75,7 @@ func (ctrl *SecretCollectionController) GetEnvBySite(c *fiber.Ctx) error {
 		"UPLOAD_LOGS":              "false",
 		"PROXY_SERVERS":            "",
 		"LOG_TO_GCP":               "true",
-		"ENABLE_FILE_LOGGING":      "true",
+		"ENABLE_FILE_LOGGING":      "false",
 	}
 	if siteCollection != nil && siteCollection.Secrets != nil {
 		// Merge siteCollection.Secrets into defaultData
