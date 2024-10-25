@@ -38,3 +38,10 @@ export interface Site {
   vm_config: VmConfig
 }
 
+export interface Server {
+  server: string
+  username: string
+  password: string
+  status: string
+}
+

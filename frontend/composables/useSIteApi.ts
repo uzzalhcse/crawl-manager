@@ -13,6 +13,7 @@ export function useSiteApi() {
   const stopCrawler = (instance_name:string) => useApi(`/api/stop-crawler/${instance_name}`);
   const buildCrawler = (site_id:string) => useApi(`/api/build-crawler/${site_id}`);
   const crawlingHistory = () => useApi(`/api/crawling-history`);
+  const proxyList = () => useApi(`/api/proxy`);
   return {
     findAll,
     save,
@@ -24,6 +25,7 @@ export function useSiteApi() {
     startCrawler,
     crawlingHistory,
     stopCrawler,
-    buildCrawler
+    buildCrawler,
+    proxyList
   };
 }

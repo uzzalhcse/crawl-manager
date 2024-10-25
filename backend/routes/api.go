@@ -15,12 +15,14 @@ func SetUpApiRoutes(api fiber.Router) {
 	collectionService := services.NewCollectionService(repo)
 	urlCollectionService := services.NewUrlCollectionService(repo)
 	secretCollectionService := services.NewSecretCollectionService(repo)
+	proxyService := services.NewProxyService(repo)
 
 	// Initialize controllers
 	siteCollectionController := controllers.NewSiteCollectionController(siteCollectionService)
 	collectionController := controllers.NewCollectionController(collectionService)
 	urlCollectionController := controllers.NewUrlCollectionController(urlCollectionService)
 	secretCollectionController := controllers.NewSecretCollectionController(secretCollectionService)
+	proxyController := controllers.NewProxyController(proxyService)
 
 	// Test controller
 	testService := services.NewTestService(repo)
@@ -61,4 +63,10 @@ func SetUpApiRoutes(api fiber.Router) {
 	secret.Get("/:siteID", secretCollectionController.GetByID)
 	secret.Put("/:siteID", secretCollectionController.Update)
 	secret.Delete("/:siteID", secretCollectionController.Delete)
+
+	// Proxy Management
+	proxy := api.Group("/proxy")
+	proxy.Post("/", proxyController.Create)
+	proxy.Get("/", proxyController.Index)
+	proxy.Delete("/:server", proxyController.Delete)
 }

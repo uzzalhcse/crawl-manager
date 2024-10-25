@@ -160,10 +160,10 @@ func (r *Repository) DeleteSiteCollection(siteID string) error {
 }
 
 // Collection CRUD
-var collection models.Collection
+var collectionModel models.Collection
 
 func (r *Repository) GetAllCollections() ([]models.Collection, error) {
-	collection := r.DB.Database(DBName).Collection(collection.GetTableName())
+	collection := r.DB.Database(DBName).Collection(collectionModel.GetTableName())
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -174,7 +174,7 @@ func (r *Repository) GetAllCollections() ([]models.Collection, error) {
 	defer cursor.Close(ctx)
 
 	var results []models.Collection
-	if err := cursor.All(ctx, &results); err != nil {
+	if err = cursor.All(ctx, &results); err != nil {
 		return nil, err
 	}
 
@@ -190,7 +190,7 @@ func (r *Repository) CreateCollection(collection *models.Collection) error {
 }
 
 func (r *Repository) GetCollectionByID(collectionID string) (*models.Collection, error) {
-	collectionColl := r.DB.Database(DBName).Collection(collection.GetTableName())
+	collectionColl := r.DB.Database(DBName).Collection(collectionModel.GetTableName())
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -203,7 +203,7 @@ func (r *Repository) GetCollectionByID(collectionID string) (*models.Collection,
 }
 
 func (r *Repository) UpdateCollection(collectionID string, update bson.M) error {
-	collectionColl := r.DB.Database(DBName).Collection(collection.GetTableName())
+	collectionColl := r.DB.Database(DBName).Collection(collectionModel.GetTableName())
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -212,7 +212,7 @@ func (r *Repository) UpdateCollection(collectionID string, update bson.M) error 
 }
 
 func (r *Repository) DeleteCollection(collectionID string) error {
-	collectionColl := r.DB.Database(DBName).Collection(collection.GetTableName())
+	collectionColl := r.DB.Database(DBName).Collection(collectionModel.GetTableName())
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -326,4 +326,49 @@ func (r *Repository) GetAllGlobalSecretCollections() ([]models.GlobalSecret, err
 	}
 
 	return results, nil
+}
+
+/*
+Proxy Service
+*/
+
+var proxyCollection models.Proxy
+
+func (r *Repository) CreateProxy(proxy *models.Proxy) error {
+	collection := r.DB.Database(DBName).Collection(proxy.GetTableName())
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	filter := bson.M{"server": proxy.Server}
+	opts := options.Replace().SetUpsert(true)
+
+	_, err := collection.ReplaceOne(ctx, filter, proxy, opts)
+	return err
+}
+func (r *Repository) GetAllProxy() ([]models.Proxy, error) {
+	collection := r.DB.Database(DBName).Collection(proxyCollection.GetTableName())
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cursor, err := collection.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var results []models.Proxy
+	if err := cursor.All(ctx, &results); err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+func (r *Repository) DeleteProxy(server string) error {
+	collection := r.DB.Database(DBName).Collection(proxyCollection.GetTableName())
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	_, err := collection.DeleteOne(ctx, bson.M{"server": server})
+	return err
 }
