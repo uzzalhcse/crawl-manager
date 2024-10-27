@@ -73,14 +73,21 @@
     </UTable>
 
     <PortalModal v-model="isNewModalOpen" :ui="{ width: 'sm:max-w-md' }" description="Add a new Proxy" title="New Proxy" prevent-close>
-      <UForm :state="server" :validate="validate" :validate-on="['submit']" class="space-y-4" @submit="saveItem">
+      <UForm :state="proxy" :validate="validate" :validate-on="['submit']" class="space-y-4" @submit="saveItem">
         <UFormGroup label="Server" name="server">
-          <UInput v-model="server.server" autofocus type="text" />
+          <small>With a scheme (http://, https://, etc.)</small>
+          <UInput v-model="proxy.server" autofocus type="text" placeholder="http://1.2.3.4:1010"/>
+        </UFormGroup>
+        <UFormGroup label="Username" name="username">
+          <UInput v-model="proxy.username" autofocus type="text" />
+        </UFormGroup>
+        <UFormGroup label="Password" name="password">
+          <UInput v-model="proxy.password" autofocus type="text" />
         </UFormGroup>
 
 
         <UFormGroup label="Status" name="status">
-          <USelectMenu v-model="server.status" :options="['active', 'inactive']" :ui-menu="{ select: 'capitalize', option: { base: 'capitalize' } }" />
+          <USelectMenu v-model="proxy.status" :options="['active', 'inactive']" :ui-menu="{ select: 'capitalize', option: { base: 'capitalize' } }" />
         </UFormGroup>
 
         <div class="flex justify-end gap-3">
@@ -119,10 +126,10 @@ const validate = (state: Server): FormError[] => {
   return errors
 }
 
-const server = ref({
+const proxy = ref({
   server: "",
-  username: "",
-  password: "",
+  username: "lnvmpyru",
+  password: "5un1tb1azapa",
   status: 'active',
 })
 const filteredRows = computed(() => {
@@ -149,15 +156,26 @@ async function stopCrawler(history:any) {
 }
 
 function resetItem(){
-  server.value = {
+  proxy.value = {
     server: "",
-    username: "",
-    password: "",
+    username: "lnvmpyru",
+    password: "5un1tb1azapa",
     status: "active",
   }
 }
 function handleAdd(){
   isNewModalOpen.value = !isNewModalOpen.value
   resetItem()
+}
+async function saveItem() {
+  loading.value = true
+  useSiteApi().save(proxy.value).then(res=>{
+    if(res.status.value!="error"){
+      isNewModalOpen.value = false;
+      refresh()
+      toast.add({ title: "Site Saved" })
+    }
+    loading.value = false
+  })
 }
 </script>
