@@ -14,6 +14,10 @@ export function useSiteApi() {
   const buildCrawler = (site_id:string) => useApi(`/api/build-crawler/${site_id}`);
   const crawlingHistory = () => useApi(`/api/crawling-history`);
   const proxyList = () => useApi(`/api/proxy`);
+  const saveProxy = (payload: any) => useApi(`/api/proxy`,{ method:'POST',body:JSON.stringify(payload) });
+  const removeProxy = (server:string) => useApi(`/api/proxy/${server}`, { method:'DELETE' });
+  const updateProxy = (payload: any, id:string) => useApi(`/api/proxy/${id}`, { method:'PUT',body:JSON.stringify(payload) });
+
   return {
     findAll,
     save,
@@ -26,6 +30,9 @@ export function useSiteApi() {
     crawlingHistory,
     stopCrawler,
     buildCrawler,
-    proxyList
+    proxyList,
+    saveProxy,
+    updateProxy,
+    removeProxy,
   };
 }

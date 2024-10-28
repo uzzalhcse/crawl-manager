@@ -8,7 +8,7 @@
         </h1>
       </template>
       <template #right>
-        <UInput v-model="q" placeholder="Filter Server..." class="ml-auto" />
+        <UInput v-model="q" placeholder="Filter Proxy..." class="ml-auto" />
         <UButton color="gray" label="New Proxy" trailing-icon="i-heroicons-plus" @click="handleAdd" />
       </template>
 
@@ -22,11 +22,18 @@
       class="w-full"
       sort-mode="manual"
     >
+      <template #server-data="{ row }">
+        {{row.server}}
+        <UKbd v-if="row.site_proxies" class="ml-2">{{ row.site_proxies.length }}</UKbd>
+      </template>
+      <template #site_proxies-data="{ row }">
+        <UKbd v-for="site in row.site_proxies" :key="site.site_id" class="mr-1">{{ site.site_id }}</UKbd>
+      </template>
       <template #action-data="{ row }">
 
-        <UPopover v-if="row.status == 'running'" class="inline-flex mr-2" overlay>
-          <UTooltip text="Stop Crawler" :popper="{ arrow: true }">
-            <UButton color="red" icon="i-heroicons-stop"/>
+        <UPopover class="inline-flex mr-2" overlay>
+          <UTooltip text="Delete Proxy" :popper="{ arrow: true }">
+            <UButton color="red" icon="i-heroicons-trash"/>
           </UTooltip>
           <template #panel="{ close }">
             <UCard class="max-w-xs mx-auto flex flex-col items-center">
@@ -54,14 +61,15 @@
                     label="OK"
                     color="yellow"
                     size="2xs"
-                    @click="() => { stopCrawler(row); }"
+                    @click="() => { deleteCrawler(row); }"
                 />
               </div>
             </UCard>
           </template>
         </UPopover>
-        <UTooltip text="Restart Crawler (upcoming)" :popper="{ arrow: true }">
-          <UButton :disabled="true" class="mr-2" color="yellow" icon="i-heroicons-arrow-path" @click="stopCrawler(row)"/>
+
+        <UTooltip text="Edit" :popper="{ arrow: true }">
+          <UButton color="orange" icon="i-heroicons-pencil-square" @click="handleEdit(row)"/>
         </UTooltip>
       </template>
       <template #empty-state>
@@ -96,6 +104,30 @@
         </div>
       </UForm>
     </PortalModal>
+    <PortalModal v-model="isEditModalOpen" :ui="{ width: 'sm:max-w-md' }" description="Add a new Proxy" title="New Proxy" prevent-close>
+      <UForm :state="proxy" :validate="validate" :validate-on="['submit']" class="space-y-4" @submit="updateItem">
+        <UFormGroup label="Server" name="server">
+          <small>With a scheme (http://, https://, etc.)</small>
+          <UInput v-model="proxy.server" autofocus type="text" placeholder="http://1.2.3.4:1010"/>
+        </UFormGroup>
+        <UFormGroup label="Username" name="username">
+          <UInput v-model="proxy.username" autofocus type="text" />
+        </UFormGroup>
+        <UFormGroup label="Password" name="password">
+          <UInput v-model="proxy.password" autofocus type="text" />
+        </UFormGroup>
+
+
+        <UFormGroup label="Status" name="status">
+          <USelectMenu v-model="proxy.status" :options="['active', 'inactive']" :ui-menu="{ select: 'capitalize', option: { base: 'capitalize' } }" />
+        </UFormGroup>
+
+        <div class="flex justify-end gap-3">
+          <UButton color="gray" label="Cancel" variant="ghost" @click="handleEdit" />
+          <UButton :loading="loading" color="black" label="Update" type="submit" />
+        </div>
+      </UForm>
+    </PortalModal>
   </div>
 </template>
 
@@ -103,22 +135,24 @@
 <script lang="ts" setup>
 
 import type { FormError } from '#ui/types';
-import type { Server } from '~/types';
+import type { Proxy } from '~/types';
 import {useSiteApi} from "~/composables/useSIteApi";
+import {base64urlEncode} from "iron-webcrypto";
 
 const route = useRoute();
 const router = useRouter();
 const q = ref<string>('');
 const loading = ref<boolean>(false);
 const isNewModalOpen = ref<boolean>(false);
+const isEditModalOpen = ref<boolean>(false);
 const toast = useToast()
 const columns = [
   { key: 'server', label: 'Server', sortable: true },
   { key: 'status', label: 'Status' ,sortable: true},
-  { key: 'uses', label: 'Uses' ,sortable: true},
+  { key: 'site_proxies', label: 'Sites' ,sortable: true},
   { key: 'action', label: 'Action' },
 ];
-const validate = (state: Server): FormError[] => {
+const validate = (state: Proxy): FormError[] => {
   const errors = []
   if (!state.server) errors.push({ path: 'server', message: 'Please enter valid server.' })
   if (!state.username) errors.push({ path: 'username', message: 'Please enter valid username.' })
@@ -127,7 +161,8 @@ const validate = (state: Server): FormError[] => {
 }
 
 const proxy = ref({
-  server: "",
+  id: "",
+  server: "http://",
   username: "lnvmpyru",
   password: "5un1tb1azapa",
   status: 'active',
@@ -137,10 +172,20 @@ const filteredRows = computed(() => {
     return items.value; // Return all items if search query is empty
   }
 
-  return items.value.filter((site: any) => {
-    return Object.values(site).some((value) => {
-      return String(value).toLowerCase().includes(q.value.toLowerCase());
-    });
+  return items.value.filter((site:any) => {
+    // Check main site properties
+    const siteMatches = Object.values(site).some((value) =>
+        String(value).toLowerCase().includes(q.value.toLowerCase())
+    );
+
+    // Check site_proxies properties
+    const siteProxiesMatch = site.site_proxies.some((proxy:any) =>
+        Object.values(proxy).some((value) =>
+            String(value).toLowerCase().includes(q.value.toLowerCase())
+        )
+    );
+
+    return siteMatches || siteProxiesMatch;
   });
 });
 const { data: items, pending: itemsPending, refresh } = await useSiteApi().proxyList();
@@ -157,7 +202,8 @@ async function stopCrawler(history:any) {
 
 function resetItem(){
   proxy.value = {
-    server: "",
+    id: "",
+    server: "http://",
     username: "lnvmpyru",
     password: "5un1tb1azapa",
     status: "active",
@@ -169,13 +215,40 @@ function handleAdd(){
 }
 async function saveItem() {
   loading.value = true
-  useSiteApi().save(proxy.value).then(res=>{
+  useSiteApi().saveProxy(proxy.value).then(res=>{
     if(res.status.value!="error"){
       isNewModalOpen.value = false;
       refresh()
-      toast.add({ title: "Site Saved" })
+      toast.add({ title: "Proxy Saved" })
     }
     loading.value = false
   })
+}
+async function updateItem() {
+  loading.value = true
+  useSiteApi().updateProxy(proxy.value,proxy.value.id).then(res=>{
+    if(res.status.value!="error"){
+      isEditModalOpen.value = false;
+      refresh()
+      toast.add({ title: "Proxy Update" })
+    }
+    loading.value = false
+  })
+}
+async function deleteCrawler(proxy:Proxy) {
+  loading.value = true
+  await useSiteApi().removeProxy(proxy.id).then(res=>{
+    if(res.status.value!="error"){
+      loading.value = false
+      toast.add({ title: "Proxy Deleted" })
+      refresh()
+    }
+  })
+}
+function handleEdit(row:any) {
+  if (row.id){
+    proxy.value = row
+  }
+  isEditModalOpen.value = !isEditModalOpen.value;
 }
 </script>

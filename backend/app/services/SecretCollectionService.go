@@ -26,10 +26,6 @@ func (s *SecretCollectionService) GetByID(siteID string) (*models.SiteSecret, er
 	return s.Repository.GetSiteSecretCollectionByID(siteID)
 }
 
-func (s *SecretCollectionService) Update(siteID string, update map[string]interface{}) error {
-	return s.Repository.UpdateSiteCollection(siteID, update)
-}
-
 func (s *SecretCollectionService) Delete(siteID string) error {
 	return s.Repository.DeleteSiteCollection(siteID)
 }

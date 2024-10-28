@@ -18,7 +18,13 @@ func (s *ProxyService) GetAllProxy() ([]models.Proxy, error) {
 func (s *ProxyService) Create(proxy *models.Proxy) error {
 	return s.Repository.CreateProxy(proxy)
 }
+func (s *ProxyService) UpdateProxy(id string, proxy *models.Proxy) error {
+	return s.Repository.UpdateProxy(id, proxy)
+}
 
 func (s *ProxyService) Delete(server string) error {
 	return s.Repository.DeleteProxy(server)
+}
+func (s *ProxyService) AssignProxiesToSite(siteID string, proxyCount int) error {
+	return s.Repository.AssignProxiesToSite(siteID, proxyCount)
 }

@@ -93,21 +93,6 @@ func (ctrl *SecretCollectionController) GetEnvBySite(c *fiber.Ctx) error {
 	return c.SendString(envData)
 }
 
-func (ctrl *SecretCollectionController) Update(c *fiber.Ctx) error {
-	siteID := c.Params("siteID")
-	var update map[string]interface{}
-	if err := c.BodyParser(&update); err != nil {
-		return responses.Error(c, err.Error())
-	}
-
-	err := ctrl.Service.Update(siteID, update)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
-	}
-
-	return responses.Success(c, nil)
-}
-
 func (ctrl *SecretCollectionController) Delete(c *fiber.Ctx) error {
 	siteID := c.Params("siteID")
 	err := ctrl.Service.Delete(siteID)

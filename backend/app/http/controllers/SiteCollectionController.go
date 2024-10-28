@@ -16,13 +16,14 @@ import (
 )
 
 type SiteCollectionController struct {
-	Service *services.SiteCollectionService
+	Service      *services.SiteCollectionService
+	ProxyService *services.ProxyService
 	*BaseController
 }
 
-func NewSiteCollectionController(service *services.SiteCollectionService) *SiteCollectionController {
+func NewSiteCollectionController(service *services.SiteCollectionService, proxyService *services.ProxyService) *SiteCollectionController {
 	that := NewBaseController()
-	return &SiteCollectionController{BaseController: that, Service: service}
+	return &SiteCollectionController{BaseController: that, Service: service, ProxyService: proxyService}
 }
 
 func (ctrl *SiteCollectionController) Index(c *fiber.Ctx) error {
@@ -40,6 +41,9 @@ func (ctrl *SiteCollectionController) Create(c *fiber.Ctx) error {
 
 	if err := ctrl.Service.Create(&siteCollection); err != nil {
 		return responses.Error(c, err.Error())
+	}
+	if err := ctrl.ProxyService.AssignProxiesToSite(siteCollection.SiteID, siteCollection.NumberOfProxies); err != nil {
+		return responses.Error(c, "Failed to assign proxies: "+err.Error())
 	}
 	if siteCollection.Frequency != "" && ctrl.Config.App.Env == "production" {
 		err := CreateSchedulerJob(ctrl.Config, siteCollection.Frequency, siteCollection.SiteID)
@@ -170,12 +174,16 @@ func (ctrl *SiteCollectionController) GetByID(c *fiber.Ctx) error {
 
 func (ctrl *SiteCollectionController) Update(c *fiber.Ctx) error {
 	siteID := c.Params("siteID")
-	var update map[string]interface{}
-	if err := c.BodyParser(&update); err != nil {
+	var siteCollection models.SiteCollection
+	if err := c.BodyParser(&siteCollection); err != nil {
 		return responses.Error(c, err.Error())
 	}
 
-	err := ctrl.Service.Update(siteID, update)
+	err := ctrl.Service.Update(siteID, &siteCollection)
+
+	if err := ctrl.ProxyService.AssignProxiesToSite(siteCollection.SiteID, siteCollection.NumberOfProxies); err != nil {
+		return responses.Error(c, "Failed to assign proxies: "+err.Error())
+	}
 	if err != nil {
 		return responses.Error(c, err.Error())
 	}

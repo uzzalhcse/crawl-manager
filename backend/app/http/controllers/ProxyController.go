@@ -40,7 +40,22 @@ func (ctrl *ProxyController) Create(c *fiber.Ctx) error {
 
 	return responses.Success(c, proxyCollection)
 }
+func (ctrl *ProxyController) Update(c *fiber.Ctx) error {
+	proxyID := c.Params("id")
+	var proxyCollection models.Proxy
 
+	// Parse request body for fields to update
+	if err := c.BodyParser(&proxyCollection); err != nil {
+		return responses.Error(c, "Failed to parse request body: "+err.Error())
+	}
+
+	// Call the service to update the proxy
+	if err := ctrl.Service.UpdateProxy(proxyID, &proxyCollection); err != nil {
+		return responses.Error(c, "Failed to update proxy: "+err.Error())
+	}
+
+	return responses.Success(c, fiber.Map{"status": "proxy updated successfully"})
+}
 func (ctrl *ProxyController) Delete(c *fiber.Ctx) error {
 	server := c.Params("server")
 	err := ctrl.Service.Delete(server)
@@ -49,4 +64,21 @@ func (ctrl *ProxyController) Delete(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{"status": "success"})
+}
+func (ctrl *ProxyController) AssignProxies(c *fiber.Ctx) error {
+	type AssignProxyRequest struct {
+		SiteID          string `json:"site_id" form:"site_id"`
+		NumberOfProxies int    `json:"number_of_proxies" form:"number_of_proxies"`
+	}
+	var request AssignProxyRequest
+	if err := c.BodyParser(&request); err != nil {
+		return responses.Error(c, "Failed to parse request body: "+err.Error())
+	}
+
+	// Call repository function to assign proxies
+	if err := ctrl.Service.AssignProxiesToSite(request.SiteID, request.NumberOfProxies); err != nil {
+		return responses.Error(c, "Failed to assign proxies: "+err.Error())
+	}
+
+	return responses.Success(c, fiber.Map{"status": "proxies assigned successfully"})
 }

@@ -38,7 +38,8 @@ export interface Site {
   vm_config: VmConfig
 }
 
-export interface Server {
+export interface Proxy {
+  id: string
   server: string
   username: string
   password: string

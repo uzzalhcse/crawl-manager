@@ -23,8 +23,10 @@
         <UFormGroup label="Initial Url" name="url">
           <UInput v-model="site.url" type="text" />
         </UFormGroup>
-        <UFormGroup label="Git Branch (only for staging)" name="git_branch">
-          <UInput v-model="site.git_branch" type="text" placeholder="LZ-XX" />
+        <UCheckbox v-model="site.use_proxy" name="use_proxy" label="Use Webshare Proxy" />
+
+        <UFormGroup v-if="site.use_proxy" label="Number of Proxy" name="num_of_proxy">
+          <UInput v-model="site.number_of_proxies" type="number" placeholder="5" />
         </UFormGroup>
 
         <UFormGroup label="Frequency" name="frequency">
@@ -80,7 +82,11 @@
         <UFormGroup label="Git Branch (only for staging)" name="git_branch">
           <UInput v-model="site.git_branch" type="text" placeholder="LZ-XX" />
         </UFormGroup>
+        <UCheckbox v-model="site.use_proxy" name="use_proxy" label="Use Webshare Proxy" />
 
+        <UFormGroup v-if="site.use_proxy" label="Number of Proxy" name="num_of_proxy">
+          <UInput v-model="site.number_of_proxies" type="number" placeholder="5" />
+        </UFormGroup>
         <UFormGroup label="Frequency" name="frequency">
           <UInput v-model="site.frequency" type="text" :disabled="true" />
           <template #description>
@@ -227,6 +233,8 @@ const site = ref({
   site_id: "",
   name: "",
   url: "",
+  use_proxy: false,
+  number_of_proxies: 0,
   frequency: "",
   status: "active",
   git_branch: "dev",
@@ -280,6 +288,8 @@ function resetItem(){
     site_id: "",
     name: "",
     url: "",
+    use_proxy: false,
+    number_of_proxies: 0,
     status: "active",
     git_branch: "dev",
     frequency:"0 0 1 * *",
@@ -336,6 +346,7 @@ async function handleRemove(id: number) {
 
 async function saveItem() {
   loading.value = true
+  site.value.number_of_proxies = Number(site.value.number_of_proxies)
   useSiteApi().save(site.value).then(res=>{
     if(res.status.value!="error"){
       isNewModalOpen.value = false;
@@ -374,6 +385,7 @@ async function saveSecret() {
 
 async function updateItem() {
   loading.value = true
+  site.value.number_of_proxies = Number(site.value.number_of_proxies)
   useSiteApi().update(site.value, site.value.site_id).then(res=>{
     if(res.status.value!="error"){
       isEditModalOpen.value = false;

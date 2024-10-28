@@ -36,8 +36,8 @@ func (s *SiteCollectionService) GetCrawlingHistory() ([]models.CrawlingHistory, 
 	return s.Repository.GetCrawlingHistory()
 }
 
-func (s *SiteCollectionService) Update(siteID string, update map[string]interface{}) error {
-	return s.Repository.UpdateSiteCollection(siteID, update)
+func (s *SiteCollectionService) Update(siteID string, siteCollection *models.SiteCollection) error {
+	return s.Repository.UpdateSiteCollection(siteID, siteCollection)
 }
 func (s *SiteCollectionService) UpdateCrawlingHistory(instanceName string, update map[string]interface{}) error {
 	return s.Repository.UpdateCrawlingHistory(instanceName, update)

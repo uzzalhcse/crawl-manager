@@ -3,7 +3,11 @@ package repositories
 import (
 	"context"
 	"crawl-manager-backend/app/models"
+	"errors"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
+	"sort"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -133,12 +137,23 @@ func (r *Repository) GetCrawlingHistory() ([]models.CrawlingHistory, error) {
 	return crwCollection, nil
 }
 
-func (r *Repository) UpdateSiteCollection(siteID string, update bson.M) error {
+func (r *Repository) UpdateSiteCollection(siteID string, siteCollection *models.SiteCollection) error {
 	collection := r.DB.Database(DBName).Collection(siteCollection.GetTableName())
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	_, err := collection.UpdateOne(ctx, bson.M{"site_id": siteID}, bson.M{"$set": update})
+	// Convert siteCollection to a bson.M for partial updates
+	updateData, err := bson.Marshal(siteCollection)
+	if err != nil {
+		return err
+	}
+
+	var updateFields bson.M
+	if err := bson.Unmarshal(updateData, &updateFields); err != nil {
+		return err
+	}
+
+	_, err = collection.UpdateOne(ctx, bson.M{"site_id": siteID}, bson.M{"$set": updateFields})
 	return err
 }
 func (r *Repository) UpdateCrawlingHistory(instanceName string, update bson.M) error {
@@ -333,6 +348,7 @@ Proxy Service
 */
 
 var proxyCollection models.Proxy
+var siteProxyCollection models.SiteProxy
 
 func (r *Repository) CreateProxy(proxy *models.Proxy) error {
 	collection := r.DB.Database(DBName).Collection(proxy.GetTableName())
@@ -361,14 +377,179 @@ func (r *Repository) GetAllProxy() ([]models.Proxy, error) {
 		return nil, err
 	}
 
+	// Fetch SiteProxies for each Proxy
+	for i := range results {
+		siteProxies, err := r.GetSiteProxiesByProxyID(results[i].ID) // Assuming you have a method to get SiteProxies
+		if err != nil {
+			return nil, err
+		}
+		results[i].SiteProxies = siteProxies
+	}
+
 	return results, nil
 }
 
-func (r *Repository) DeleteProxy(server string) error {
-	collection := r.DB.Database(DBName).Collection(proxyCollection.GetTableName())
+// GetSiteProxiesByProxyID fetches SiteProxies related to the provided ProxyID
+func (r *Repository) GetSiteProxiesByProxyID(proxyID primitive.ObjectID) ([]models.SiteProxy, error) {
+	collection := r.DB.Database(DBName).Collection(siteProxyCollection.GetTableName())
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	cursor, err := collection.Find(ctx, bson.M{"proxy_id": proxyID})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var siteProxies []models.SiteProxy
+	if err := cursor.All(ctx, &siteProxies); err != nil {
+		return nil, err
+	}
+
+	return siteProxies, nil
+}
+
+func (r *Repository) DeleteProxy(id string) error {
+	collectionName := proxyCollection.GetTableName()
+	if collectionName == "" {
+		return errors.New("collection name for Proxy is empty")
+	}
+
+	collection := r.DB.Database(DBName).Collection(collectionName)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	_, err := collection.DeleteOne(ctx, bson.M{"server": server})
-	return err
+	// Convert the ID string to an ObjectID
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		log.Printf("Invalid ID format: %v", err)
+		return err
+	}
+
+	// Create the filter
+	filter := bson.M{"_id": objectID}
+	result, err := collection.DeleteOne(ctx, filter)
+	if err != nil {
+		log.Printf("Error deleting proxy with ID %s: %v", id, err)
+		return err
+	}
+
+	// Check if a document was actually deleted
+	if result.DeletedCount == 0 {
+		log.Printf("No proxy found with ID %s to delete", id)
+		return mongo.ErrNoDocuments
+	}
+
+	log.Printf("Successfully deleted proxy with ID %s", id)
+	return nil
+}
+
+func (r *Repository) UpdateProxy(proxyID string, proxy *models.Proxy) error {
+	m := models.Proxy{}
+	collection := r.DB.Database(DBName).Collection(m.GetTableName())
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Convert the ID string to an ObjectID
+	objectID, err := primitive.ObjectIDFromHex(proxyID)
+	if err != nil {
+		log.Printf("Invalid ID format: %v", err)
+		return err
+	}
+
+	// Convert the proxy model to bson for updating fields
+	update := bson.M{"$set": proxy}
+
+	// Update the proxy with the provided fields
+	_, err = collection.UpdateOne(ctx, bson.M{"_id": objectID}, update)
+	if err != nil {
+		log.Printf("Failed to update proxy: %v", err)
+		return err
+	}
+
+	return nil
+}
+func (r *Repository) AssignProxiesToSite(siteID string, proxyCount int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Check if the site already has enough proxies assigned
+	existingProxyCount, err := r.DB.Database(DBName).Collection(siteProxyCollection.GetTableName()).CountDocuments(ctx, bson.M{"site_id": siteID})
+	if err != nil {
+		return err
+	}
+	if int(existingProxyCount) >= proxyCount {
+		return nil // Proxies are already assigned, so exit the function
+	}
+
+	// Fetch all available proxies
+	cursor, err := r.DB.Database(DBName).Collection(proxyCollection.GetTableName()).Find(ctx, bson.M{"status": "active"})
+	if err != nil {
+		return err
+	}
+	defer cursor.Close(ctx)
+
+	var availableProxies []models.Proxy
+	if err := cursor.All(ctx, &availableProxies); err != nil {
+		return err
+	}
+
+	// Ensure there are available proxies
+	if len(availableProxies) == 0 {
+		return errors.New("no available proxies found")
+	}
+
+	// Count the usage of each proxy
+	proxyUsageCounts := make(map[primitive.ObjectID]int)
+	for _, proxy := range availableProxies {
+		countCursor, err := r.DB.Database(DBName).Collection(siteProxyCollection.GetTableName()).CountDocuments(ctx, bson.M{"proxy_id": proxy.ID})
+		if err != nil {
+			return err
+		}
+		proxyUsageCounts[proxy.ID] = int(countCursor)
+	}
+
+	// Create a slice to sort proxies by usage count
+	type proxyUsage struct {
+		Proxy models.Proxy
+		Count int
+	}
+
+	var sortedProxies []proxyUsage
+	for _, proxy := range availableProxies {
+		sortedProxies = append(sortedProxies, proxyUsage{Proxy: proxy, Count: proxyUsageCounts[proxy.ID]})
+	}
+
+	// Sort proxies by usage count in ascending order (least used first)
+	sort.Slice(sortedProxies, func(i, j int) bool {
+		return sortedProxies[i].Count < sortedProxies[j].Count
+	})
+
+	// Distribute proxies to sites
+	for i := 0; i < proxyCount-int(existingProxyCount); i++ { // Adjust based on existing count
+		// Find the least used proxy
+		for _, proxyUsage := range sortedProxies {
+			currentProxy := proxyUsage.Proxy
+
+			// Check if this site proxy already exists
+			existing := r.DB.Database(DBName).Collection(siteProxyCollection.GetTableName()).FindOne(ctx, bson.M{"site_id": siteID, "proxy_id": currentProxy.ID})
+			if existing.Err() == mongo.ErrNoDocuments {
+				// Create the site proxy assignment
+				siteProxy := models.SiteProxy{
+					SiteID:  siteID,
+					ProxyID: currentProxy.ID,
+				}
+
+				// Insert the assignment into the site_proxies collection
+				_, err := r.DB.Database(DBName).Collection(siteProxyCollection.GetTableName()).InsertOne(ctx, siteProxy)
+				if err != nil {
+					log.Println("Error inserting site proxy:", err)
+					return err
+				}
+
+				break // Break out to assign the next site proxy
+			}
+		}
+	}
+
+	return nil
 }
