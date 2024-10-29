@@ -18,6 +18,9 @@ func (s *ProxyService) GetAllProxy() ([]models.Proxy, error) {
 func (s *ProxyService) GetProxyBySiteID(siteID string) ([]models.Proxy, error) {
 	return s.Repository.GetSiteProxiesBySiteID(siteID)
 }
+func (s *ProxyService) FindProxy(id string) (*models.Proxy, error) {
+	return s.Repository.FindProxy(id)
+}
 func (s *ProxyService) Create(proxy *models.Proxy) error {
 	return s.Repository.CreateProxy(proxy)
 }

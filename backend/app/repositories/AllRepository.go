@@ -4,6 +4,7 @@ import (
 	"context"
 	"crawl-manager-backend/app/models"
 	"errors"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
@@ -443,6 +444,30 @@ func (r *Repository) GetSiteProxiesBySiteID(SiteID string) ([]models.Proxy, erro
 	}
 
 	return proxies, nil
+}
+
+func (r *Repository) FindProxy(id string) (*models.Proxy, error) {
+	// Initialize collections
+	proxyCollections := r.DB.Database(DBName).Collection(proxyCollection.GetTableName())
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Convert id to ObjectID if necessary
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, fmt.Errorf("invalid ID format: %v", err)
+	}
+
+	var proxy models.Proxy
+	err = proxyCollections.FindOne(ctx, bson.M{"_id": objectID}).Decode(&proxy)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("proxy with ID %s not found", id)
+		}
+		return nil, err
+	}
+	return &proxy, nil
 }
 
 func (r *Repository) DeleteProxy(id string) error {

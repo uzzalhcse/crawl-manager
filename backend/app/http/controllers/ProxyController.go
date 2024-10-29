@@ -67,6 +67,21 @@ func (ctrl *ProxyController) Update(c *fiber.Ctx) error {
 
 	return responses.Success(c, fiber.Map{"status": "proxy updated successfully"})
 }
+func (ctrl *ProxyController) StopProxy(c *fiber.Ctx) error {
+	proxyID := c.Params("id")
+	proxyCollection, err := ctrl.Service.FindProxy(proxyID)
+	if err != nil {
+		return responses.Error(c, err.Error())
+	}
+	proxyCollection.Status = "inactive"
+
+	// Call the service to update the proxy
+	if err := ctrl.Service.UpdateProxy(proxyID, proxyCollection); err != nil {
+		return responses.Error(c, "Failed to update proxy: "+err.Error())
+	}
+
+	return responses.Success(c, fiber.Map{"status": "proxy updated successfully"})
+}
 func (ctrl *ProxyController) Delete(c *fiber.Ctx) error {
 	server := c.Params("server")
 	err := ctrl.Service.Delete(server)
