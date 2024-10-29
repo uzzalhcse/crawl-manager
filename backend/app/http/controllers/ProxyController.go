@@ -27,6 +27,17 @@ func (ctrl *ProxyController) Index(c *fiber.Ctx) error {
 	}
 	return responses.Success(c, proxyCollections)
 }
+func (ctrl *ProxyController) Show(c *fiber.Ctx) error {
+	siteID := c.Params("siteID")
+	proxyCollections, err := ctrl.Service.GetProxyBySiteID(siteID)
+	if len(proxyCollections) == 0 {
+		proxyCollections = make([]models.Proxy, 0)
+	}
+	if err != nil {
+		return responses.Error(c, err.Error())
+	}
+	return responses.Success(c, proxyCollections)
+}
 func (ctrl *ProxyController) Create(c *fiber.Ctx) error {
 	var proxyCollection models.Proxy
 	if err := c.BodyParser(&proxyCollection); err != nil {

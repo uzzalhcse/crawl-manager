@@ -408,6 +408,41 @@ func (r *Repository) GetSiteProxiesByProxyID(proxyID primitive.ObjectID) ([]mode
 	return siteProxies, nil
 }
 
+// GetSiteProxiesBySiteID fetches SiteProxies related to the provided SiteID
+func (r *Repository) GetSiteProxiesBySiteID(SiteID string) ([]models.Proxy, error) {
+	// Initialize collections
+	siteProxyCollections := r.DB.Database(DBName).Collection(siteProxyCollection.GetTableName())
+	proxyCollections := r.DB.Database(DBName).Collection(proxyCollection.GetTableName())
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Step 1: Fetch SiteProxy entries that match the given proxyID
+	cursor, err := siteProxyCollections.Find(ctx, bson.M{"site_id": SiteID})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var siteProxies []models.SiteProxy
+	if err := cursor.All(ctx, &siteProxies); err != nil {
+		return nil, err
+	}
+
+	// Step 2: Extract ProxyIDs and fetch corresponding Proxy documents
+	var proxies []models.Proxy
+	for _, siteProxy := range siteProxies {
+		var proxy models.Proxy
+		err = proxyCollections.FindOne(ctx, bson.M{"_id": siteProxy.ProxyID}).Decode(&proxy)
+		if err != nil {
+			return nil, err
+		}
+		proxies = append(proxies, proxy)
+	}
+
+	return proxies, nil
+}
+
 func (r *Repository) DeleteProxy(id string) error {
 	collectionName := proxyCollection.GetTableName()
 	if collectionName == "" {

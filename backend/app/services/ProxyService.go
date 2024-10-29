@@ -15,6 +15,9 @@ func NewProxyService(repo *repositories.Repository) *ProxyService {
 func (s *ProxyService) GetAllProxy() ([]models.Proxy, error) {
 	return s.Repository.GetAllProxy()
 }
+func (s *ProxyService) GetProxyBySiteID(siteID string) ([]models.Proxy, error) {
+	return s.Repository.GetSiteProxiesBySiteID(siteID)
+}
 func (s *ProxyService) Create(proxy *models.Proxy) error {
 	return s.Repository.CreateProxy(proxy)
 }
