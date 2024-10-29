@@ -57,6 +57,7 @@ func (ctrl *SecretCollectionController) GetEnvBySite(c *fiber.Ctx) error {
 
 	// Define default data
 	defaultData := map[string]interface{}{
+		"SITE_ID":                  siteID,
 		"PROJECT_ID":               ctrl.Config.Manager.ProjectID,
 		"SERVER_IP":                ctrl.Config.Manager.ServerIP,
 		"DB_USERNAME":              "lazuli",
