@@ -70,5 +70,5 @@ func SetUpApiRoutes(api fiber.Router) {
 	proxy.Get("/:siteID", proxyController.Show)
 	proxy.Put("/:id", proxyController.Update)
 	proxy.Delete("/:server", proxyController.Delete)
-	proxy.Post("/allocate-proxies", proxyController.AssignProxies)
+	//proxy.Post("/allocate-proxies", proxyController.AssignProxies)
 }

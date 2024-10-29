@@ -433,7 +433,7 @@ func (r *Repository) GetSiteProxiesBySiteID(SiteID string) ([]models.Proxy, erro
 	var proxies []models.Proxy
 	for _, siteProxy := range siteProxies {
 		var proxy models.Proxy
-		err = proxyCollections.FindOne(ctx, bson.M{"_id": siteProxy.ProxyID}).Decode(&proxy)
+		err = proxyCollections.FindOne(ctx, bson.M{"_id": siteProxy.ProxyID, "status": "active"}).Decode(&proxy)
 		if err != nil {
 			return nil, err
 		}
