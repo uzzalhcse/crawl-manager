@@ -4,7 +4,8 @@
     <DashboardToolbar>
       <template #left>
         <h1 class="flex items-center gap-1.5 font-semibold text-gray-900 dark:text-white min-w-0">
-          <span class="truncate">Proxy Management</span>
+          <span class="truncate">Proxy Management
+        <UKbd class="ml-2">{{ filteredRows.length }}</UKbd></span>
         </h1>
       </template>
       <template #right>
