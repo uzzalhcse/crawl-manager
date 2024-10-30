@@ -57,14 +57,14 @@ func (ctrl *SecretCollectionController) GetEnvBySite(c *fiber.Ctx) error {
 
 	// Define default data
 	defaultData := map[string]interface{}{
-		"SITE_ID":                  siteID,
-		"PROJECT_ID":               ctrl.Config.Manager.ProjectID,
-		"SERVER_IP":                ctrl.Config.Manager.ServerIP,
-		"DB_USERNAME":              "lazuli",
-		"DB_PASSWORD":              "x1RWo6cqFtHiaAHce5HB",
-		"DB_HOST":                  "localhost",
-		"DB_PORT":                  27017,
-		"USER_AGENT":               "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+		"SITE_ID":     siteID,
+		"PROJECT_ID":  ctrl.Config.Manager.ProjectID,
+		"SERVER_IP":   ctrl.Config.Manager.ServerIP,
+		"DB_USERNAME": "lazuli",
+		"DB_PASSWORD": "x1RWo6cqFtHiaAHce5HB",
+		"DB_HOST":     "localhost",
+		"DB_PORT":     27017,
+		//"USER_AGENT":               "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
 		"APP_ENV":                  ctrl.Config.App.Env,
 		"API_USERNAME":             "lazuli",
 		"API_PASSWORD":             "ninja",
