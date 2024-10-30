@@ -180,7 +180,7 @@ const filteredRows = computed(() => {
     );
 
     // Check site_proxies properties
-    const siteProxiesMatch = site.site_proxies.some((proxy:any) =>
+    const siteProxiesMatch = site.site_proxies?.some((proxy:any) =>
         Object.values(proxy).some((value) =>
             String(value).toLowerCase().includes(q.value.toLowerCase())
         )
