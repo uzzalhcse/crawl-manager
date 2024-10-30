@@ -24,7 +24,7 @@
       sort-mode="manual"
     >
       <template #server-data="{ row }">
-        {{row.server}}
+        <span :class="row.status=='inactive' ? 'bg-orange-200 text-white-800 rounded p-1':''">{{row.server}}</span>
         <UKbd v-if="row.site_proxies" class="ml-2">{{ row.site_proxies.length }}</UKbd>
       </template>
       <template #site_proxies-data="{ row }">
@@ -71,6 +71,9 @@
 
         <UTooltip text="Edit" :popper="{ arrow: true }">
           <UButton color="orange" icon="i-heroicons-pencil-square" @click="handleEdit(row)"/>
+        </UTooltip>
+        <UTooltip v-if="row.status=='inactive'" text="Error Logs" :popper="{ arrow: true }">
+          <UButton class="ml-2" color="green" icon="i-heroicons-clipboard-document-list" @click="handleLog(row)"/>
         </UTooltip>
       </template>
       <template #empty-state>
@@ -129,6 +132,11 @@
         </div>
       </UForm>
     </PortalModal>
+    <PortalModal v-model="isLogModalOpen" :ui="{ width: 'sm:max-w-md' }" title="Error Logs" prevent-close>
+      <pre>
+        {{proxyLog}}
+      </pre>
+    </PortalModal>
   </div>
 </template>
 
@@ -146,6 +154,7 @@ const q = ref<string>('');
 const loading = ref<boolean>(false);
 const isNewModalOpen = ref<boolean>(false);
 const isEditModalOpen = ref<boolean>(false);
+const isLogModalOpen = ref<boolean>(false);
 const toast = useToast()
 const columns = [
   { key: 'server', label: 'Server', sortable: true },
@@ -160,7 +169,7 @@ const validate = (state: Proxy): FormError[] => {
   if (!state.password) errors.push({ path: 'password', message: 'Please enter valid password.' })
   return errors
 }
-
+const proxyLog = ref("")
 const proxy = ref({
   id: "",
   server: "http://",
@@ -251,5 +260,9 @@ function handleEdit(row:any) {
     proxy.value = row
   }
   isEditModalOpen.value = !isEditModalOpen.value;
+}
+function handleLog(row:any) {
+  proxyLog.value = row.error_log
+  isLogModalOpen.value = !isLogModalOpen.value;
 }
 </script>
