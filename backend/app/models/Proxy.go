@@ -8,7 +8,8 @@ type Proxy struct {
 	Username    string             `json:"username" bson:"username"`
 	Password    string             `json:"password" bson:"password"`
 	Status      string             `json:"status" bson:"status"`
-	SiteProxies []SiteProxy        `json:"site_proxies" bson:"site_proxies" gorm:"foreignKey:ProxyID"`
+	ErrorLog    string             `json:"error_log" bson:"error_log"`
+	SiteProxies []SiteProxy        `json:"site_proxies" bson:"site_proxies"`
 }
 
 func (c *Proxy) GetTableName() string {

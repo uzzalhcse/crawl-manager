@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	proxyrequest "crawl-manager-backend/app/http/requests/proxy"
 	"crawl-manager-backend/app/http/responses"
 	"crawl-manager-backend/app/models"
 	"crawl-manager-backend/app/services"
@@ -68,15 +69,23 @@ func (ctrl *ProxyController) Update(c *fiber.Ctx) error {
 	return responses.Success(c, fiber.Map{"status": "proxy updated successfully"})
 }
 func (ctrl *ProxyController) StopProxy(c *fiber.Ctx) error {
-	proxyID := c.Params("id")
-	proxyCollection, err := ctrl.Service.FindProxy(proxyID)
-	if err != nil {
-		return responses.Error(c, err.Error())
+	// Parse the JSON payload
+	var payload proxyrequest.StopProxy
+	if err := c.BodyParser(&payload); err != nil {
+		return responses.Error(c, "Invalid request payload: "+err.Error())
 	}
+
+	// Retrieve the proxy from the service using the provided ID
+	proxyCollection, err := ctrl.Service.FindProxy(payload.Proxy.ID)
+	if err != nil {
+		return responses.Error(c, "Failed to find proxy: "+err.Error())
+	}
+
 	proxyCollection.Status = "inactive"
+	proxyCollection.ErrorLog = proxyCollection.ErrorLog + "\n" + payload.Error
 
 	// Call the service to update the proxy
-	if err := ctrl.Service.UpdateProxy(proxyID, proxyCollection); err != nil {
+	if err := ctrl.Service.UpdateProxy(payload.Proxy.ID, proxyCollection); err != nil {
 		return responses.Error(c, "Failed to update proxy: "+err.Error())
 	}
 
