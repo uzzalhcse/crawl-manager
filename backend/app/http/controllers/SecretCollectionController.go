@@ -74,9 +74,9 @@ func (ctrl *SecretCollectionController) GetEnvBySite(c *fiber.Ctx) error {
 		"GCP_SERVICE_ACCOUNT":      ctrl.Config.Manager.ServiceAccountCredentials,
 		"BIGQUERY_DATASET":         "data_source",
 		"UPLOAD_LOGS":              "false",
-		"PROXY_SERVERS":            "",
-		"LOG_TO_GCP":               "true",
-		"ENABLE_FILE_LOGGING":      "false",
+		//"PROXY_SERVERS":            "",
+		"LOG_TO_GCP":          "true",
+		"ENABLE_FILE_LOGGING": "false",
 	}
 	if siteCollection != nil && siteCollection.Secrets != nil {
 		// Merge siteCollection.Secrets into defaultData
