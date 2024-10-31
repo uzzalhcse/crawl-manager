@@ -10,13 +10,14 @@
       </template>
       <template #right>
         <UInput v-model="q" placeholder="Filter Proxy..." class="ml-auto" />
-        <UButton color="gray" label="New Proxy" trailing-icon="i-heroicons-plus" @click="handleAdd" />
+        <UButton color="gray" label="Sync Proxy" trailing-icon="i-heroicons-plus" @click="syncProxyList" />
+<!--        <UButton color="gray" label="New Proxy" trailing-icon="i-heroicons-plus" @click="handleAdd" />-->
       </template>
 
     </DashboardToolbar>
     <UTable
       :columns="columns"
-      :loading="itemsPending"
+      :loading="itemsPending || loading"
       :progress="{ color: 'primary', animation: 'carousel' }"
       :rows="filteredRows"
       :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
@@ -24,57 +25,65 @@
       sort-mode="manual"
     >
       <template #server-data="{ row }">
-        <span :class="row.status=='inactive' ? 'bg-orange-200 text-white-800 rounded p-1':''">{{row.server}}</span>
+
+        <span :class="!row.valid ? 'text-red-500' : 'text-green-500'">{{row.server}}</span>
         <UKbd v-if="row.site_proxies" class="ml-2">{{ row.site_proxies.length }}</UKbd>
+      </template>
+      <template #valid-data="{ row }">
+        <UKbd class="ml-2">{{ row.valid ? 'Valid' : 'Invalid' }}</UKbd>
+        <UTooltip v-if="!row.valid" text="Error Logs" :popper="{ arrow: true }">
+          <UButton class="ml-2" size="xs" color="green" icon="i-heroicons-clipboard-document-list" @click="handleLog(row)"/>
+        </UTooltip>
       </template>
       <template #site_proxies-data="{ row }">
         <UKbd v-for="site in row.site_proxies" :key="site.site_id" class="mr-1">{{ site.site_id }}</UKbd>
       </template>
       <template #action-data="{ row }">
 
-        <UPopover class="inline-flex mr-2" overlay>
-          <UTooltip text="Delete Proxy" :popper="{ arrow: true }">
-            <UButton color="red" icon="i-heroicons-trash"/>
-          </UTooltip>
-          <template #panel="{ close }">
-            <UCard class="max-w-xs mx-auto flex flex-col items-center">
-              <!-- Icon and Message -->
-              <div class="flex items-center">
-                <i class="i-heroicons-exclamation-triangle text-yellow mr-2"></i>
-                <div class="font-semibold">
-                  Do you want to proceed with this action?
-                </div>
-              </div>
+<!--        <UPopover class="inline-flex mr-2" overlay>-->
+<!--          <UTooltip text="Delete Proxy" :popper="{ arrow: true }">-->
+<!--            <UButton color="red" icon="i-heroicons-trash"/>-->
+<!--          </UTooltip>-->
+<!--          <template #panel="{ close }">-->
+<!--            <UCard class="max-w-xs mx-auto flex flex-col items-center">-->
+<!--              &lt;!&ndash; Icon and Message &ndash;&gt;-->
+<!--              <div class="flex items-center">-->
+<!--                <i class="i-heroicons-exclamation-triangle text-yellow mr-2"></i>-->
+<!--                <div class="font-semibold">-->
+<!--                  Do you want to proceed with this action?-->
+<!--                </div>-->
+<!--              </div>-->
 
-              <!-- Buttons -->
-              <div class="mt-4 flex justify-end space-x-4 w-full">
-                <!-- Cancel Button -->
-                <UButton
-                    :disabled="loading"
-                    text="true"
-                    label="No, Thanks"
-                    size="2xs"
-                    @click="close"
-                />
-                <!-- Confirm Button -->
-                <UButton
-                    :loading="loading"
-                    label="OK"
-                    color="yellow"
-                    size="2xs"
-                    @click="() => { deleteCrawler(row); }"
-                />
-              </div>
-            </UCard>
-          </template>
-        </UPopover>
+<!--              &lt;!&ndash; Buttons &ndash;&gt;-->
+<!--              <div class="mt-4 flex justify-end space-x-4 w-full">-->
+<!--                &lt;!&ndash; Cancel Button &ndash;&gt;-->
+<!--                <UButton-->
+<!--                    :disabled="loading"-->
+<!--                    text="true"-->
+<!--                    label="No, Thanks"-->
+<!--                    size="2xs"-->
+<!--                    @click="close"-->
+<!--                />-->
+<!--                &lt;!&ndash; Confirm Button &ndash;&gt;-->
+<!--                <UButton-->
+<!--                    :loading="loading"-->
+<!--                    label="OK"-->
+<!--                    color="yellow"-->
+<!--                    size="2xs"-->
+<!--                    @click="() => { deleteCrawler(row); }"-->
+<!--                />-->
+<!--              </div>-->
+<!--            </UCard>-->
+<!--          </template>-->
+<!--        </UPopover>-->
 
-        <UTooltip text="Edit" :popper="{ arrow: true }">
-          <UButton color="orange" icon="i-heroicons-pencil-square" @click="handleEdit(row)"/>
-        </UTooltip>
-        <UTooltip v-if="row.status=='inactive'" text="Error Logs" :popper="{ arrow: true }">
+<!--        <UTooltip text="Edit" :popper="{ arrow: true }">-->
+<!--          <UButton color="orange" icon="i-heroicons-pencil-square" @click="handleEdit(row)"/>-->
+<!--        </UTooltip>-->
+        <UTooltip v-if="!row.valid" text="Error Logs" :popper="{ arrow: true }">
           <UButton class="ml-2" color="green" icon="i-heroicons-clipboard-document-list" @click="handleLog(row)"/>
         </UTooltip>
+        <span v-else>N/A</span>
       </template>
       <template #empty-state>
         <div class="flex flex-col items-center justify-center py-6 gap-3">
@@ -158,9 +167,12 @@ const isLogModalOpen = ref<boolean>(false);
 const toast = useToast()
 const columns = [
   { key: 'server', label: 'Server', sortable: true },
-  { key: 'status', label: 'Status' ,sortable: true},
+  { key: 'country_code', label: 'country_code' ,sortable: true},
+  { key: 'city_name', label: 'city_name' ,sortable: true},
   { key: 'site_proxies', label: 'Sites' ,sortable: true},
-  { key: 'action', label: 'Action' },
+  { key: 'last_verification', label: 'last_verification' ,sortable: true},
+  { key: 'valid', label: 'Status' ,sortable: true},
+  // { key: 'action', label: 'Action' },
 ];
 const validate = (state: Proxy): FormError[] => {
   const errors = []
@@ -222,6 +234,16 @@ function resetItem(){
 function handleAdd(){
   isNewModalOpen.value = !isNewModalOpen.value
   resetItem()
+}
+async function syncProxyList() {
+  loading.value = true
+  useSiteApi().syncProxy().then(res=>{
+    if(res.status.value!="error"){
+      refresh()
+      toast.add({ title: "Proxy Sync Done" })
+    }
+    loading.value = false
+  })
 }
 async function saveItem() {
   loading.value = true

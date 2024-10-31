@@ -2,7 +2,7 @@
   <div>
     <DashboardPage>
       <DashboardPanel grow>
-        <PagePortalProxy/>
+        <LazyPagePortalProxy/>
       </DashboardPanel>
     </DashboardPage>
   </div>

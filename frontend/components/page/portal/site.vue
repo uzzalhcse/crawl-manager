@@ -139,13 +139,19 @@
     </PortalModal>
     <UTable
       :columns="columns"
-      :loading="itemsPending"
+      :loading="itemsPending || loading"
       :progress="{ color: 'primary', animation: 'carousel' }"
       :rows="filteredRows"
       :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
       class="w-full"
       sort-mode="manual"
     >
+      <template #site_id-data="{ row }">
+        <span :class="row.status === 'inactive' ? 'text-red-500' : ''">{{row.site_id}}</span>
+        <UTooltip v-if="row.use_proxy" text="Number of used proxy" :popper="{ arrow: true }">
+          <UKbd class="ml-2">{{ row.number_of_proxies }}</UKbd>
+        </UTooltip>
+      </template>
       <template #action-data="{ row }">
         <UPopover class="inline-flex mr-2" overlay>
           <UTooltip text="Run Crawler" :popper="{ arrow: true }">
@@ -225,7 +231,8 @@ const toast = useToast()
 const columns = [
   { key: 'site_id', label: 'Name', sortable: true },
   { key: 'url', label: 'Url' },
-  { key: 'status', label: 'Status' },
+  { key: 'status', label: 'Status', sortable: true },
+  { key: 'git_branch', label: 'Git Branch', sortable: true },
   { key: 'frequency', label: 'Crawling Frequency' },
   { key: 'vm_config', label: 'VM Config' },
   { key: 'action', label: 'Action' }
