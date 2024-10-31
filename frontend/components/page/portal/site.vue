@@ -23,6 +23,9 @@
         <UFormGroup label="Initial Url" name="url">
           <UInput v-model="site.url" type="text" />
         </UFormGroup>
+        <UFormGroup label="Git Branch (only for staging)" name="git_branch">
+          <UInput v-model="site.git_branch" type="text" placeholder="LZ-XX" />
+        </UFormGroup>
         <UCheckbox v-model="site.use_proxy" name="use_proxy" label="Use Webshare Proxy" />
 
         <UFormGroup v-if="site.use_proxy" label="Number of Proxy" name="num_of_proxy">
