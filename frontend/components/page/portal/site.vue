@@ -139,7 +139,7 @@
     </PortalModal>
     <UTable
       :columns="columns"
-      :loading="itemsPending || loading"
+      :loading="itemsPending"
       :progress="{ color: 'primary', animation: 'carousel' }"
       :rows="filteredRows"
       :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
