@@ -178,6 +178,9 @@ func (ctrl *SiteCollectionController) Update(c *fiber.Ctx) error {
 	if err := c.BodyParser(&siteCollection); err != nil {
 		return responses.Error(c, err.Error())
 	}
+	if !siteCollection.UseProxy {
+		siteCollection.NumberOfProxies = 0
+	}
 
 	err := ctrl.Service.Update(siteID, &siteCollection)
 

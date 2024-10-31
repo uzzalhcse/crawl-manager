@@ -534,6 +534,15 @@ func (r *Repository) AssignProxiesToSite(siteID string, proxyCount int) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	// If proxyCount is 0, remove all existing proxies for the site
+	if proxyCount == 0 {
+		_, err := r.DB.Database(DBName).Collection(siteProxyCollection.GetTableName()).DeleteMany(ctx, bson.M{"site_id": siteID})
+		if err != nil {
+			return fmt.Errorf("failed to remove proxies for site %s: %w", siteID, err)
+		}
+		return nil // No proxies to assign, so return immediately
+	}
+
 	// Check if the site already has enough proxies assigned
 	existingProxyCount, err := r.DB.Database(DBName).Collection(siteProxyCollection.GetTableName()).CountDocuments(ctx, bson.M{"site_id": siteID})
 	if err != nil {
