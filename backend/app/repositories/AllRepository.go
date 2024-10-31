@@ -351,17 +351,17 @@ Proxy Service
 var proxyCollection models.Proxy
 var siteProxyCollection models.SiteProxy
 
-func (r *Repository) CreateProxy(proxy *models.Proxy) error {
-	collection := r.DB.Database(DBName).Collection(proxy.GetTableName())
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	filter := bson.M{"server": proxy.Server}
-	opts := options.Replace().SetUpsert(true)
-
-	_, err := collection.ReplaceOne(ctx, filter, proxy, opts)
-	return err
-}
+//	func (r *Repository) CreateProxy(proxy *models.Proxy) error {
+//		collection := r.DB.Database(DBName).Collection(proxy.GetTableName())
+//		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+//		defer cancel()
+//
+//		filter := bson.M{"server": proxy.Server}
+//		opts := options.Replace().SetUpsert(true)
+//
+//		_, err := collection.ReplaceOne(ctx, filter, proxy, opts)
+//		return err
+//	}
 func (r *Repository) GetAllProxy() ([]models.Proxy, error) {
 	collection := r.DB.Database(DBName).Collection(proxyCollection.GetTableName())
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -438,7 +438,7 @@ func (r *Repository) GetSiteProxiesBySiteID(SiteID string) ([]models.Proxy, erro
 		if err != nil {
 			return nil, err
 		}
-		if proxy.Status == "active" {
+		if proxy.Valid {
 			proxies = append(proxies, proxy)
 		}
 	}
@@ -504,6 +504,37 @@ func (r *Repository) DeleteProxy(id string) error {
 	log.Printf("Successfully deleted proxy with ID %s", id)
 	return nil
 }
+func (r *Repository) UpdateProxies(proxies []models.Proxy) error {
+	m := models.Proxy{}
+	collection := r.DB.Database(DBName).Collection(m.GetTableName())
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	var bulkOps []mongo.WriteModel
+	for _, proxy := range proxies {
+		// Create a filter based on unique fields
+		filter := bson.M{
+			"proxy_address": proxy.ProxyAddress, // Replace with the actual field name
+			"port":          proxy.Port,         // Replace with the actual field name
+			"proxy_id":      proxy.ProxyID,      // Replace with the actual field name
+		}
+
+		// Create update operation
+		update := mongo.NewUpdateOneModel().SetFilter(filter).SetUpdate(bson.M{"$set": proxy}).SetUpsert(true)
+		bulkOps = append(bulkOps, update)
+	}
+
+	// Execute bulk write operation
+	if len(bulkOps) > 0 {
+		_, err := collection.BulkWrite(ctx, bulkOps)
+		if err != nil {
+			log.Printf("Failed to bulk update proxies: %v", err)
+			return err
+		}
+	}
+
+	return nil
+}
 
 func (r *Repository) UpdateProxy(proxyID string, proxy *models.Proxy) error {
 	m := models.Proxy{}
@@ -553,7 +584,7 @@ func (r *Repository) AssignProxiesToSite(siteID string, proxyCount int) error {
 	}
 
 	// Fetch all available proxies
-	cursor, err := r.DB.Database(DBName).Collection(proxyCollection.GetTableName()).Find(ctx, bson.M{"status": "active"})
+	cursor, err := r.DB.Database(DBName).Collection(proxyCollection.GetTableName()).Find(ctx, bson.M{"valid": true})
 	if err != nil {
 		return err
 	}

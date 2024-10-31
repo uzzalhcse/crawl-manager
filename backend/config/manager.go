@@ -11,6 +11,8 @@ type ManagerConfig struct {
 	ServiceAccountEmail       string
 	ServiceAccountCredentials string
 	GcpBucketName             string
+	WebShareApiKey            string
+	WebShareApiUrl            string
 }
 
 func loadManagerConfig() ManagerConfig {
@@ -23,5 +25,7 @@ func loadManagerConfig() ManagerConfig {
 		ServiceAccountEmail:       viper.GetString("SERVICE_ACCOUNT_EMAIL"),
 		ServiceAccountCredentials: viper.GetString("GCP_SERVICE_ACCOUNT"),
 		GcpBucketName:             viper.GetString("GCP_BUCKET_NAME"),
+		WebShareApiKey:            viper.GetString("WEB_SHARE_API_KEY"),
+		WebShareApiUrl:            viper.GetString("WEB_SHARE_API_URL"),
 	}
 }

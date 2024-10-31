@@ -18,6 +18,16 @@ func NewProxyController(service *services.ProxyService) *ProxyController {
 	return &ProxyController{Service: service, BaseController: that}
 }
 
+func (ctrl *ProxyController) Sync(c *fiber.Ctx) error {
+	proxyCollections, err := ctrl.Service.SyncProxy()
+	if len(proxyCollections) == 0 {
+		proxyCollections = make([]models.Proxy, 0)
+	}
+	if err != nil {
+		return responses.Error(c, err.Error())
+	}
+	return responses.Success(c, proxyCollections)
+}
 func (ctrl *ProxyController) Index(c *fiber.Ctx) error {
 	proxyCollections, err := ctrl.Service.GetAllProxy()
 	if len(proxyCollections) == 0 {
@@ -39,19 +49,20 @@ func (ctrl *ProxyController) Show(c *fiber.Ctx) error {
 	}
 	return responses.Success(c, proxyCollections)
 }
-func (ctrl *ProxyController) Create(c *fiber.Ctx) error {
-	var proxyCollection models.Proxy
-	if err := c.BodyParser(&proxyCollection); err != nil {
-		return responses.Error(c, err.Error())
-	}
 
-	err := ctrl.Service.Create(&proxyCollection)
-	if err != nil {
-		return responses.Error(c, err.Error())
-	}
-
-	return responses.Success(c, proxyCollection)
-}
+//	func (ctrl *ProxyController) Create(c *fiber.Ctx) error {
+//		var proxyCollection models.Proxy
+//		if err := c.BodyParser(&proxyCollection); err != nil {
+//			return responses.Error(c, err.Error())
+//		}
+//
+//		err := ctrl.Service.Create(&proxyCollection)
+//		if err != nil {
+//			return responses.Error(c, err.Error())
+//		}
+//
+//		return responses.Success(c, proxyCollection)
+//	}
 func (ctrl *ProxyController) Update(c *fiber.Ctx) error {
 	proxyID := c.Params("id")
 	var proxyCollection models.Proxy
@@ -81,7 +92,7 @@ func (ctrl *ProxyController) StopProxy(c *fiber.Ctx) error {
 		return responses.Error(c, "Failed to find proxy: "+err.Error())
 	}
 
-	proxyCollection.Status = "inactive"
+	proxyCollection.Valid = false
 	proxyCollection.ErrorLog = proxyCollection.ErrorLog + "\n" + payload.Error
 
 	// Call the service to update the proxy

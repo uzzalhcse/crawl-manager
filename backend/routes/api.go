@@ -65,7 +65,8 @@ func SetUpApiRoutes(api fiber.Router) {
 
 	// Proxy Management
 	proxy := api.Group("/proxy")
-	proxy.Post("/", proxyController.Create)
+	proxy.Get("/sync", proxyController.Sync)
+	//proxy.Post("/", proxyController.Create)
 	proxy.Get("/", proxyController.Index)
 	proxy.Get("/:siteID", proxyController.Show)
 	proxy.Post("/stop", proxyController.StopProxy)
