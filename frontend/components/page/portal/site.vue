@@ -5,6 +5,7 @@
       <template #left>
         <h1 class="flex items-center gap-1.5 font-semibold text-gray-900 dark:text-white min-w-0">
           <span class="truncate">Site</span>
+          <UKbd class="ml-2">{{ filteredRows.length }}</UKbd>
         </h1>
       </template>
       <template #right>
@@ -94,9 +95,10 @@
         <UFormGroup label="Frequency" name="frequency">
           <UInput v-model="site.frequency" type="text" />
           <template #description>
-            Schedules are specified using unix-cron format. E.g. every minute: "* * * * *", every 3 hours: "0 */3 * * *", every Monday at 9:00: "0 9 * * 1"
+            Schedules are specified using unix-cron format.
             <UButton size="2xs" to="https://cloud.google.com/scheduler/docs/configuring/cron-job-schedules" icon="i-heroicons-arrow-top-right-on-square"  target="_blank">Learn More</UButton>
           </template>
+          <small style="color: yellow">Frequency may be overridden to make it unique</small>
         </UFormGroup>
 
         <UFormGroup label="Status" name="status">
@@ -126,7 +128,7 @@
       </UForm>
     </PortalModal>
 
-    <PortalModal v-model="isSecretModalOpen" :ui="{ width: 'sm:max-w-md' }" description="Add a new site" title="Site Secret" prevent-close>
+    <PortalModal v-model="isSecretModalOpen" :ui="{ width: 'sm:max-w-md' }" description="Use valid JSON format {}" :title="`Update ENV for ${secret.site_id}`" prevent-close>
       <UForm :state="secret" class="space-y-4" @submit="saveSecret">
         <UFormGroup label="Secrets (Json Key:Value)" name="secrets">
           <UTextarea v-model="secret.secrets" resize type="text" />

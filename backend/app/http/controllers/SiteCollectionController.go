@@ -22,8 +22,6 @@ type SiteCollectionController struct {
 	*BaseController
 }
 
-var removeMeAsap = true
-
 func NewSiteCollectionController(service *services.SiteCollectionService, proxyService *services.ProxyService) *SiteCollectionController {
 	that := NewBaseController()
 	return &SiteCollectionController{BaseController: that, Service: service, ProxyService: proxyService}
@@ -203,7 +201,7 @@ func (ctrl *SiteCollectionController) Update(c *fiber.Ctx) error {
 		return responses.Error(c, err.Error())
 	}
 
-	if siteData.Frequency != siteCollection.Frequency || removeMeAsap {
+	if siteData.Frequency != siteCollection.Frequency {
 		frequency := getAvailableFrequency(ctrl.Config, siteCollection.Frequency)
 		siteCollection.Frequency = frequency
 	}
@@ -219,7 +217,7 @@ func (ctrl *SiteCollectionController) Update(c *fiber.Ctx) error {
 	}
 
 	// Update or create the Cloud Scheduler job if frequency is specified and environment is production
-	if removeMeAsap || siteCollection.Frequency != "" && siteData.Frequency != siteCollection.Frequency && ctrl.Config.App.Env == "production" {
+	if siteCollection.Frequency != "" && siteData.Frequency != siteCollection.Frequency && ctrl.Config.App.Env == "production" {
 		err := CreateOrUpdateSchedulerJob(ctrl.Config, siteCollection.Frequency, siteCollection.SiteID, true)
 		if err != nil {
 			return responses.Error(c, err.Error())
