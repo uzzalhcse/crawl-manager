@@ -12,6 +12,7 @@ import (
 	"io"
 	"net/http"
 	"os/exec"
+	"strconv"
 	"strings"
 )
 
@@ -20,6 +21,8 @@ type SiteCollectionController struct {
 	ProxyService *services.ProxyService
 	*BaseController
 }
+
+var removeMeAsap = true
 
 func NewSiteCollectionController(service *services.SiteCollectionService, proxyService *services.ProxyService) *SiteCollectionController {
 	that := NewBaseController()
@@ -38,7 +41,8 @@ func (ctrl *SiteCollectionController) Create(c *fiber.Ctx) error {
 	if err := c.BodyParser(&siteCollection); err != nil {
 		return responses.Error(c, err.Error())
 	}
-
+	frequency := getAvailableFrequency(ctrl.Config, siteCollection.Frequency)
+	siteCollection.Frequency = frequency
 	if err := ctrl.Service.Create(&siteCollection); err != nil {
 		return responses.Error(c, err.Error())
 	}
@@ -46,13 +50,25 @@ func (ctrl *SiteCollectionController) Create(c *fiber.Ctx) error {
 		return responses.Error(c, "Failed to assign proxies: "+err.Error())
 	}
 	if siteCollection.Frequency != "" && ctrl.Config.App.Env == "production" {
-		err := CreateSchedulerJob(ctrl.Config, siteCollection.Frequency, siteCollection.SiteID)
+		err := CreateOrUpdateSchedulerJob(ctrl.Config, siteCollection.Frequency, siteCollection.SiteID, false)
 		if err != nil {
 			return responses.Error(c, err.Error())
 		}
 	}
 
 	return responses.Success(c, "Site created successfully")
+}
+func getAvailableFrequency(config *config.Config, frequency string) string {
+	if frequency != "" && config.App.Env == "production" {
+		// Retrieve existing jobs and find the next available time slot
+		existingJobs, _ := findNextAvailableTimeSlot(config) // Assume this function lists all scheduler jobs
+		nextAvailableSchedule := findNextAvailableSlot(existingJobs, frequency)
+		// Use the next available schedule with a 5-minute gap
+		if nextAvailableSchedule != "" {
+			frequency = nextAvailableSchedule
+		}
+	}
+	return frequency
 }
 func CreateSchedulerJob(config *config.Config, frequency, siteName string) error {
 	// Get gcloud access token
@@ -182,13 +198,32 @@ func (ctrl *SiteCollectionController) Update(c *fiber.Ctx) error {
 		siteCollection.NumberOfProxies = 0
 	}
 
-	err := ctrl.Service.Update(siteID, &siteCollection)
+	siteData, err := ctrl.Service.GetByID(siteID)
+	if err != nil {
+		return responses.Error(c, err.Error())
+	}
 
+	if siteData.Frequency != siteCollection.Frequency || removeMeAsap {
+		frequency := getAvailableFrequency(ctrl.Config, siteCollection.Frequency)
+		siteCollection.Frequency = frequency
+	}
+	// Update the site in the database
+	err = ctrl.Service.Update(siteID, &siteCollection)
+	if err != nil {
+		return responses.Error(c, err.Error())
+	}
+
+	// Assign proxies to the site if necessary
 	if err := ctrl.ProxyService.AssignProxiesToSite(siteCollection.SiteID, siteCollection.NumberOfProxies); err != nil {
 		return responses.Error(c, "Failed to assign proxies: "+err.Error())
 	}
-	if err != nil {
-		return responses.Error(c, err.Error())
+
+	// Update or create the Cloud Scheduler job if frequency is specified and environment is production
+	if removeMeAsap || siteCollection.Frequency != "" && siteData.Frequency != siteCollection.Frequency && ctrl.Config.App.Env == "production" {
+		err := CreateOrUpdateSchedulerJob(ctrl.Config, siteCollection.Frequency, siteCollection.SiteID, true)
+		if err != nil {
+			return responses.Error(c, err.Error())
+		}
 	}
 
 	return responses.Success(c, "Site updated successfully")
@@ -202,4 +237,198 @@ func (ctrl *SiteCollectionController) Delete(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{"status": "success"})
+}
+func (ctrl *SiteCollectionController) FindNextAvailableTimeSlot(c *fiber.Ctx) error {
+	existingJobs, err := findNextAvailableTimeSlot(ctrl.Config)
+	if err != nil {
+		return fmt.Errorf("error finding next available time slot: %v", err)
+	}
+
+	nextAvailableSchedule := findNextAvailableSlot(existingJobs, "0 0 1,15 * *")
+	return responses.Success(c, fiber.Map{
+		"existingJobs":          existingJobs,
+		"nextAvailableSchedule": nextAvailableSchedule,
+	})
+}
+func findNextAvailableTimeSlot(config *config.Config) ([]string, error) {
+	// Get gcloud access token
+	cmd := exec.Command("gcloud", "auth", "print-access-token")
+	output, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving access token: %v", err)
+	}
+	accessToken := strings.TrimSpace(string(output))
+
+	// URL to list jobs in the specified project and region
+	url := fmt.Sprintf("https://cloudscheduler.googleapis.com/v1/projects/%s/locations/%s/jobs", config.Manager.ProjectID, config.Manager.Region)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating HTTP request to list jobs: %v", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error sending request to list jobs: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		respBody, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("unexpected response: %s", string(respBody))
+	}
+
+	// Parse the response to extract the job schedules
+	var responseBody struct {
+		Jobs []struct {
+			Schedule string `json:"schedule"`
+		} `json:"jobs"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&responseBody); err != nil {
+		return nil, fmt.Errorf("error decoding JSON response: %v", err)
+	}
+
+	var schedulers []string
+	for _, job := range responseBody.Jobs {
+		schedulers = append(schedulers, job.Schedule)
+	}
+	return schedulers, nil
+}
+
+// Create or update the scheduler job with time slot gap
+func CreateOrUpdateSchedulerJob(config *config.Config, frequency, siteName string, isUpdate bool) error {
+	cmd := exec.Command("gcloud", "auth", "print-access-token")
+	output, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("error retrieving access token: %v", err)
+	}
+	accessToken := strings.TrimSpace(string(output))
+
+	// Define job details, including the calculated time slot
+	jobRequestBody := map[string]interface{}{
+		"name":     fmt.Sprintf("projects/%s/locations/%s/jobs/%s-job", config.Manager.ProjectID, config.Manager.Region, siteName),
+		"schedule": frequency,
+		"timeZone": "UTC",
+		"httpTarget": map[string]interface{}{
+			"uri":        fmt.Sprintf("%s/api/start-crawler/%s", config.Manager.ServerIP, siteName),
+			"httpMethod": "GET",
+			"headers": map[string]string{
+				"Content-Type": "application/json",
+			},
+		},
+	}
+
+	// Convert the job request body to JSON
+	requestBody, err := json.Marshal(jobRequestBody)
+	if err != nil {
+		return fmt.Errorf("error marshaling JSON request body: %v", err)
+	}
+
+	// Determine URL and HTTP method based on whether creating or updating the job
+	var url string
+	var method string
+	if isUpdate {
+		url = fmt.Sprintf("https://cloudscheduler.googleapis.com/v1/projects/%s/locations/%s/jobs/%s-job", config.Manager.ProjectID, config.Manager.Region, siteName)
+		method = "PATCH"
+	} else {
+		url = fmt.Sprintf("https://cloudscheduler.googleapis.com/v1/projects/%s/locations/%s/jobs", config.Manager.ProjectID, config.Manager.Region)
+		method = "POST"
+	}
+
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(requestBody))
+	if err != nil {
+		return fmt.Errorf("error creating HTTP request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("error sending request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		respBody, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("unexpected response: %s", string(respBody))
+	}
+
+	if isUpdate {
+		fmt.Println("Cloud Scheduler job updated successfully with time slot gap")
+	} else {
+		fmt.Println("Cloud Scheduler job created successfully with time slot gap")
+	}
+
+	return nil
+}
+
+// Find the next available time slot in 5-minute increments within an hour
+func findNextAvailableSlot(existingJobs []string, baseSchedule string) string {
+	baseComponents := parseCronExpression(baseSchedule)
+	usedSlots := getUsedSlotsDynamic(existingJobs, baseComponents)
+
+	// Look for the next available slot
+	minutes, hour := findNextAvailableMinuteSlot(usedSlots, baseComponents)
+	if minutes == -1 { // If no slot within the current hour, go to the next hour
+		baseComponents[1] = strconv.Itoa((parseHour(baseComponents[1]) + 1) % 24)
+		minutes = 0 // Start from the beginning of the hour
+	}
+
+	// Return formatted cron expression with the found minute and hour slot
+	return formatScheduleWithMinuteAndHour(baseSchedule, minutes, hour)
+}
+
+// Find the next available minute slot in 3-minute increments for the current hour
+func findNextAvailableMinuteSlot(usedSlots map[int]bool, baseComponents []string) (int, string) {
+	hour := parseHour(baseComponents[1])
+	for i := 0; i < 60; i += 3 {
+		if !usedSlots[i] {
+			return i, strconv.Itoa(hour)
+		}
+	}
+	return -1, strconv.Itoa(hour) // No available slots within the hour
+}
+
+// Parse the hour as an integer
+func parseHour(hourStr string) int {
+	hour, _ := strconv.Atoi(hourStr)
+	return hour
+}
+
+// Parse cron expression into components
+func parseCronExpression(schedule string) []string {
+	return strings.Fields(schedule)
+}
+
+// Get dynamically used slots based on existing jobs and base schedule components
+func getUsedSlotsDynamic(existingJobs []string, baseComponents []string) map[int]bool {
+	usedSlots := make(map[int]bool)
+	for _, job := range existingJobs {
+		jobComponents := parseCronExpression(job)
+		if matchesBaseSchedule(jobComponents, baseComponents) {
+			minute, _ := strconv.Atoi(jobComponents[0])
+			usedSlots[minute] = true
+		}
+	}
+	return usedSlots
+}
+
+// Check if job components match the base schedule components except for the minute
+func matchesBaseSchedule(jobComponents, baseComponents []string) bool {
+	for i := 1; i < len(baseComponents); i++ {
+		if baseComponents[i] != "*" && baseComponents[i] != jobComponents[i] {
+			return false
+		}
+	}
+	return true
+}
+
+// Format the cron schedule with specific minute and hour offsets
+func formatScheduleWithMinuteAndHour(baseSchedule string, minute int, hour string) string {
+	parts := strings.Fields(baseSchedule)
+	parts[0] = strconv.Itoa(minute)
+	parts[1] = hour
+	return strings.Join(parts, " ")
 }

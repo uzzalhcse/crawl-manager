@@ -32,6 +32,7 @@ func SetUpApiRoutes(api fiber.Router) {
 	api.Get("/", testController.Test)
 	api.Get("/test", testController.GetAllHandler)
 	api.Get("/start-crawler/:SiteID/:zone", testController.StartCrawler)
+	api.Get("/test/available-slots", siteCollectionController.FindNextAvailableTimeSlot) // test api
 
 	// SiteCollection routes
 	site := api.Group("/site")

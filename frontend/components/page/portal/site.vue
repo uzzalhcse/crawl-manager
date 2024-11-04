@@ -35,9 +35,10 @@
         <UFormGroup label="Frequency" name="frequency">
           <UInput v-model="site.frequency" type="text" />
           <template #description>
-            Schedules are specified using unix-cron format. E.g. every minute: "* * * * *", every 3 hours: "0 */3 * * *", every Monday at 9:00: "0 9 * * 1"
-            <UButton size="2xs" to="https://cloud.google.com/scheduler/docs/configuring/cron-job-schedules" icon="i-heroicons-arrow-top-right-on-square"  target="_blank">Learn More</UButton>
+            Schedules are specified using unix-cron format.
+            <UButton size="2xs" to="https://cloud.google.com/scheduler/docs/configuring/cron-job-schedules" icon="i-heroicons-arrow-top-right-on-square"  target="_blank">More</UButton>
           </template>
+          <small style="color: yellow">Frequency may be overridden to make it unique</small>
         </UFormGroup>
 
         <UFormGroup label="Status" name="status">
@@ -91,7 +92,7 @@
           <UInput v-model="site.number_of_proxies" type="number" placeholder="5" />
         </UFormGroup>
         <UFormGroup label="Frequency" name="frequency">
-          <UInput v-model="site.frequency" type="text" :disabled="true" />
+          <UInput v-model="site.frequency" type="text" />
           <template #description>
             Schedules are specified using unix-cron format. E.g. every minute: "* * * * *", every 3 hours: "0 */3 * * *", every Monday at 9:00: "0 9 * * 1"
             <UButton size="2xs" to="https://cloud.google.com/scheduler/docs/configuring/cron-job-schedules" icon="i-heroicons-arrow-top-right-on-square"  target="_blank">Learn More</UButton>
