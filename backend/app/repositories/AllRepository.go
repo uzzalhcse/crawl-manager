@@ -655,3 +655,12 @@ func (r *Repository) AssignProxiesToSite(siteID string, proxyCount int) error {
 
 	return nil
 }
+
+func (r *Repository) SaveCrawlingPerformance(crawlingPerformance *models.CrawlingPerformance) error {
+	collection := r.DB.Database(DBName).Collection(crawlingPerformance.GetTableName())
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	_, err := collection.InsertOne(ctx, crawlingPerformance)
+	return err
+}

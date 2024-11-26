@@ -58,6 +58,23 @@ func (that *ManagerController) StopCrawler(c *fiber.Ctx) error {
 	fmt.Println("cmd output: ", res)
 	return nil
 }
+
+func (that *ManagerController) CrawlingHistoryLog(c *fiber.Ctx) error {
+
+	instanceName := c.Params("instanceName")
+
+	var crawlingPerformance models.CrawlingPerformance
+	if err := c.BodyParser(&crawlingPerformance); err != nil {
+		return responses.Error(c, err.Error())
+	}
+	crawlingPerformance.InstanceName = instanceName
+	crawlingPerformance.CreatedAt = time.Now()
+	if err := that.siteService.AddCrawlingPerformance(&crawlingPerformance); err != nil {
+		return responses.Error(c, err.Error())
+	}
+
+	return nil
+}
 func ExecuteCommand(command string, args []string) string {
 	cmd := exec.Command(command, args...)
 

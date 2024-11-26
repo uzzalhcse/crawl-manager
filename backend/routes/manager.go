@@ -12,4 +12,5 @@ func SetUpManagerRoutes(api fiber.Router) {
 	api.Get("/build-crawler/:SiteID", managerController.BuildCrawler)
 	api.Get("/stop-crawler/:instanceName", managerController.StopCrawler)
 	api.Get("/crawling-history", managerController.CrawlingHistory)
+	api.Post("/add-crawler-logs/:instanceName", managerController.CrawlingHistoryLog)
 }

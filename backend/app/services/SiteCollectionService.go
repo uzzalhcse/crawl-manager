@@ -43,6 +43,10 @@ func (s *SiteCollectionService) UpdateCrawlingHistory(instanceName string, updat
 	return s.Repository.UpdateCrawlingHistory(instanceName, update)
 }
 
+func (s *SiteCollectionService) AddCrawlingPerformance(crawlingPerformance *models.CrawlingPerformance) error {
+	return s.Repository.SaveCrawlingPerformance(crawlingPerformance)
+}
+
 func (s *SiteCollectionService) Delete(siteID string) error {
 	return s.Repository.DeleteSiteCollection(siteID)
 }
