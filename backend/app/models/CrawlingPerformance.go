@@ -12,6 +12,7 @@ type CrawlingPerformance struct {
 	RequestsPerMinute int32     `json:"requests_per_minute" bson:"requests_per_minute"`
 	RequestsPerHour   int32     `json:"requests_per_hour" bson:"requests_per_hour"`
 	RequestsPerDay    int32     `json:"requests_per_day" bson:"requests_per_day"`
+	MonthlyForecast   int32     `json:"monthly_forecast" bson:"monthly_forecast"`
 	CreatedAt         time.Time `json:"created_at" bson:"created_at"`
 }
 
