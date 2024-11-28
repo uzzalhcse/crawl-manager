@@ -365,17 +365,29 @@ func CreateOrUpdateSchedulerJob(config *config.Config, frequency, siteName strin
 // Find the next available time slot in 5-minute increments within an hour
 func findNextAvailableSlot(existingJobs []string, baseSchedule string) string {
 	baseComponents := parseCronExpression(baseSchedule)
-	usedSlots := getUsedSlotsDynamic(existingJobs, baseComponents)
 
-	// Look for the next available slot
-	minutes, hour := findNextAvailableMinuteSlot(usedSlots, baseComponents)
-	if minutes == -1 { // If no slot within the current hour, go to the next hour
-		baseComponents[1] = strconv.Itoa((parseHour(baseComponents[1]) + 1) % 24)
-		minutes = 0 // Start from the beginning of the hour
+	// Start from the base hour and try up to 24 hours
+	for hourOffset := 0; hourOffset < 24; hourOffset++ {
+		// Calculate new hour, wrapping around at 24
+		newHour := (parseHour(baseComponents[1]) + hourOffset) % 24
+
+		// Get used slots for this specific hour
+		modifiedComponents := make([]string, len(baseComponents))
+		copy(modifiedComponents, baseComponents)
+		modifiedComponents[1] = strconv.Itoa(newHour)
+
+		usedSlots := getUsedSlotsDynamic(existingJobs, modifiedComponents)
+
+		// Find the next available minute slot for this hour
+		for minutes := 0; minutes < 60; minutes += 3 {
+			if !usedSlots[minutes] {
+				return formatScheduleWithMinuteAndHour(baseSchedule, minutes, strconv.Itoa(newHour))
+			}
+		}
 	}
 
-	// Return formatted cron expression with the found minute and hour slot
-	return formatScheduleWithMinuteAndHour(baseSchedule, minutes, hour)
+	// If no slot found after checking all hours, return original base schedule
+	return baseSchedule
 }
 
 // Find the next available minute slot in 3-minute increments for the current hour
