@@ -242,7 +242,7 @@ func (ctrl *SiteCollectionController) FindNextAvailableTimeSlot(c *fiber.Ctx) er
 		return fmt.Errorf("error finding next available time slot: %v", err)
 	}
 
-	nextAvailableSchedule := findNextAvailableSlot(existingJobs, "0 0 1,15 * *")
+	nextAvailableSchedule := findNextAvailableSlot(existingJobs, "0 18 * * 4")
 	return responses.Success(c, fiber.Map{
 		"existingJobs":          existingJobs,
 		"nextAvailableSchedule": nextAvailableSchedule,
