@@ -236,7 +236,7 @@ const columns = [
   { key: 'url', label: 'Url' },
   { key: 'status', label: 'Status', sortable: true },
   { key: 'git_branch', label: 'Git Branch', sortable: true },
-  { key: 'frequency', label: 'Crawling Frequency' },
+  { key: 'frequency', label: 'Crawling Frequency', sortable: true },
   { key: 'vm_config', label: 'VM Config' },
   { key: 'action', label: 'Action' }
 ];
