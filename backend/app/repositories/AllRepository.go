@@ -28,6 +28,7 @@ func NewRepository(db *mongo.Client) *Repository {
 // SiteCollection CRUD
 var siteCollection models.SiteCollection
 var crawlingHistoryCollection models.CrawlingHistory
+var crawlingSummary models.CrawlingSummary
 
 func (r *Repository) GetAllSiteCollections() ([]models.SiteCollection, error) {
 	collection := r.DB.Database(DBName).Collection(siteCollection.GetTableName())
@@ -126,6 +127,30 @@ func (r *Repository) GetCrawlingHistory() ([]models.CrawlingHistory, error) {
 	findOptions.SetSort(bson.D{{"start_date", -1}}) // Sort by StartDate in descending order
 
 	cursor, err := collection.Find(ctx, bson.M{}, findOptions)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	if err := cursor.All(ctx, &crwCollection); err != nil {
+		return nil, err
+	}
+
+	return crwCollection, nil
+}
+func (r *Repository) GetCrawlingSummary(instanceName string) ([]models.CrawlingSummary, error) {
+	collection := r.DB.Database(DBName).Collection(crawlingSummary.GetTableName())
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	crwCollection := []models.CrawlingSummary{}
+
+	// Use MongoDB sort to get the latest data based on StartDate
+	findOptions := options.Find()
+	findOptions.SetSort(bson.D{{"created_at", -1}}) // Sort by StartDate in descending order
+	filter := bson.M{"instance_name": instanceName}
+
+	cursor, err := collection.Find(ctx, filter, findOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -662,5 +687,32 @@ func (r *Repository) SaveCrawlingPerformance(crawlingPerformance *models.Crawlin
 	defer cancel()
 
 	_, err := collection.InsertOne(ctx, crawlingPerformance)
+	return err
+}
+
+func (r *Repository) SaveCrawlingSummary(crawlingSummary *models.CrawlingSummary) error {
+	collection := r.DB.Database(DBName).Collection(crawlingSummary.GetTableName())
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Define the filter to find the existing document (e.g., by SiteID and InstanceName)
+	filter := bson.M{
+		"site_id":         crawlingSummary.SiteID,
+		"instance_name":   crawlingSummary.InstanceName,
+		"collection_name": crawlingSummary.CollectionName,
+	}
+
+	// Define the update document
+	update := bson.M{
+		"$set": bson.M{
+			"data_count":  crawlingSummary.DataCount,
+			"error_count": crawlingSummary.ErrorCount,
+			"errors":      crawlingSummary.Errors,
+			"created_at":  crawlingSummary.CreatedAt,
+		},
+	}
+
+	// Use upsert to update or create
+	_, err := collection.UpdateOne(ctx, filter, update, options.Update().SetUpsert(true))
 	return err
 }

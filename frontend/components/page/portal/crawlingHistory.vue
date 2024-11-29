@@ -24,8 +24,13 @@
       sort-mode="manual"
     >
       <template #logs-data="{ row }">
-        <UButton class="mr-2" color="red" icon="i-heroicons-clipboard-document-list" @click="isLogModalOpen=true" />
-        <UButton :to="row.log_url" icon="i-heroicons-arrow-top-right-on-square"  target="_blank"></UButton>
+
+        <UTooltip text="Summary Logs" :popper="{ arrow: true }">
+          <UButton class="mr-2" color="red" icon="i-heroicons-clipboard-document-list" @click="handleSummaryLog(row)" />
+        </UTooltip>
+        <UTooltip text="GCP Log explorer" :popper="{ arrow: true }">
+          <UButton :to="row.log_url" icon="i-heroicons-arrow-top-right-on-square"  target="_blank"></UButton>
+        </UTooltip>
       </template>
       <template #action-data="{ row }">
 
@@ -76,10 +81,26 @@
       </template>
     </UTable>
 
-    <PortalModal v-model="isLogModalOpen" :ui="{ width: 'sm:max-w-md' }" title="Summary Logs" prevent-close>
-      <pre>
-        {{logs}}
-      </pre>
+    <PortalModal v-model="isLogModalOpen" :ui="{ width: 'max-w-xl' }" title="Summary Logs" prevent-close>
+      <UTable
+          :columns="summaryColumns"
+          :loading="itemsPending"
+          :progress="{ color: 'primary', animation: 'carousel' }"
+          :rows="crawlingSummary"
+          :ui="{ divide: 'divide-gray-200 dark:divide-gray-800' }"
+          class="w-full"
+          sort-mode="manual"
+      >
+        <template #errors-data="{ row }">
+<!--          <span v-for="error in row.errors" class="text-red-500"> {{ error.url }}, </span>-->
+          <h4>upcoming</h4>
+        </template>
+        <template #empty-state>
+          <div class="flex flex-col items-center justify-center py-6 gap-3">
+            <span class="italic text-sm">No Crawling Summary Found!</span>
+          </div>
+        </template>
+      </UTable>
     </PortalModal>
   </div>
 </template>
@@ -106,11 +127,15 @@ const columns = [
   { key: 'action', label: 'Action' },
   { key: 'logs', label: 'Logs'}
 ];
+const summaryColumns = [
+  { key: 'collection_name', label: 'Collection',sortable: true },
+  { key: 'data_count', label: 'Data' },
+  { key: 'error_count', label: 'Error',sortable: true},
+  { key: 'created_at', label: 'Date',sortable: true },
+  { key: 'errors', label: 'Errors'}
+];
 
-const logs = [
-  {
-  },
-]
+const crawlingSummary = ref<any>([])
 const filteredRows = computed(() => {
   if (!q.value) {
     return items.value; // Return all items if search query is empty
@@ -131,6 +156,12 @@ async function stopCrawler(history:any) {
       toast.add({ title: "Crawler Stopped" })
       refresh()
     }
+  })
+}
+async function handleSummaryLog(row:any) {
+  isLogModalOpen.value = true
+  await useSiteApi().getCrawlerSummary(row.instance_name).then(res=>{
+    crawlingSummary.value = res.data.value
   })
 }
 </script>

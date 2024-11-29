@@ -75,6 +75,22 @@ func (that *ManagerController) CrawlingHistoryLog(c *fiber.Ctx) error {
 
 	return nil
 }
+func (that *ManagerController) CrawlingSummary(c *fiber.Ctx) error {
+
+	instanceName := c.Params("instanceName")
+
+	var crawlingSummary models.CrawlingSummary
+	if err := c.BodyParser(&crawlingSummary); err != nil {
+		return responses.Error(c, err.Error())
+	}
+	crawlingSummary.InstanceName = instanceName
+	crawlingSummary.CreatedAt = time.Now()
+	if err := that.siteService.AddCrawlingSummary(&crawlingSummary); err != nil {
+		return responses.Error(c, err.Error())
+	}
+
+	return nil
+}
 func ExecuteCommand(command string, args []string) string {
 	cmd := exec.Command(command, args...)
 
@@ -147,4 +163,14 @@ func (that *ManagerController) CrawlingHistory(c *fiber.Ctx) error {
 	}
 
 	return responses.Success(c, crawlingHistory)
+}
+
+func (that *ManagerController) GetCrawlingSummary(c *fiber.Ctx) error {
+	instanceName := c.Params("instanceName")
+	crawlingSummary, err := that.siteService.GetCrawlingSummary(instanceName)
+	if err != nil {
+		return responses.Error(c, err.Error())
+	}
+
+	return responses.Success(c, crawlingSummary)
 }

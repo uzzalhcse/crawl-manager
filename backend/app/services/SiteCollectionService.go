@@ -35,6 +35,9 @@ func (s *SiteCollectionService) GetCrawlerFromHistory(instanceName string) (*mod
 func (s *SiteCollectionService) GetCrawlingHistory() ([]models.CrawlingHistory, error) {
 	return s.Repository.GetCrawlingHistory()
 }
+func (s *SiteCollectionService) GetCrawlingSummary(instanceName string) ([]models.CrawlingSummary, error) {
+	return s.Repository.GetCrawlingSummary(instanceName)
+}
 
 func (s *SiteCollectionService) Update(siteID string, siteCollection *models.SiteCollection) error {
 	return s.Repository.UpdateSiteCollection(siteID, siteCollection)
@@ -45,6 +48,9 @@ func (s *SiteCollectionService) UpdateCrawlingHistory(instanceName string, updat
 
 func (s *SiteCollectionService) AddCrawlingPerformance(crawlingPerformance *models.CrawlingPerformance) error {
 	return s.Repository.SaveCrawlingPerformance(crawlingPerformance)
+}
+func (s *SiteCollectionService) AddCrawlingSummary(crawlingSummary *models.CrawlingSummary) error {
+	return s.Repository.SaveCrawlingSummary(crawlingSummary)
 }
 
 func (s *SiteCollectionService) Delete(siteID string) error {
