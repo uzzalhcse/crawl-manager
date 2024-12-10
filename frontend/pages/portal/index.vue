@@ -39,6 +39,7 @@
 definePageMeta({
   name: 'Portal',
   layout: 'portal',
+  middleware: 'auth'
 })
 </script>
 

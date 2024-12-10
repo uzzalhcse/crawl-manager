@@ -13,7 +13,8 @@
 
 definePageMeta({
   name: 'Proxy',
-  layout: 'portal'
+  layout: 'portal',
+  middleware: 'auth'
 });
 
 </script>

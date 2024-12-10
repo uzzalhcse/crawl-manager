@@ -13,7 +13,8 @@
 
 definePageMeta({
   name: 'Sites',
-  layout: 'portal'
+  layout: 'portal',
+  middleware: 'auth'
 });
 
 </script>

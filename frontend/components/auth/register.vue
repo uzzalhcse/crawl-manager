@@ -10,11 +10,11 @@
           />
         </div>
         <h2 class="text-center text-2xl font-bold mt-4 text-gray-900 dark:text-white">
-          Sign in to your account
+          Create an account
         </h2>
       </template>
 
-      <!-- Show login error if exists -->
+      <!-- Show registration error if exists -->
       <UAlert
           v-if="authStore.loginError"
           color="red"
@@ -22,31 +22,42 @@
           class="mb-4"
       />
 
-      <form @submit.prevent="handleLogin" class="space-y-6">
-        <UFormGroup label="Username" name="username">
+      <form @submit.prevent="handleRegister" class="space-y-6">
+        <UFormGroup label="Full Name" name="name">
+          <UInput
+              v-model="name"
+              type="text"
+              placeholder="Enter your full name"
+              icon="i-heroicons-user"
+              required
+          />
+        </UFormGroup>
+
+        <UFormGroup label="Email address" name="email">
           <UInput
               v-model="email"
-              type="text"
-              placeholder="Enter your username"
+              type="email"
+              placeholder="Enter your email"
               icon="i-heroicons-envelope"
               required
           />
         </UFormGroup>
 
-        <UFormGroup name="password">
-          <div class="flex justify-between items-center mb-1">
-            <label class="block text-sm font-medium">Password</label>
-            <ULink
-                to="/forgot-password"
-                class="text-sm text-primary hover:text-primary-400"
-            >
-              Forgot password?
-            </ULink>
-          </div>
+        <UFormGroup label="Password" name="password">
           <UInput
               v-model="password"
               type="password"
-              placeholder="Enter your password"
+              placeholder="Create a password"
+              icon="i-heroicons-lock-closed"
+              required
+          />
+        </UFormGroup>
+
+        <UFormGroup label="Confirm Password" name="confirmPassword">
+          <UInput
+              v-model="confirmPassword"
+              type="password"
+              placeholder="Confirm your password"
               icon="i-heroicons-lock-closed"
               required
           />
@@ -58,18 +69,18 @@
             block
             :loading="isLoading"
         >
-          Sign in
+          Create Account
         </UButton>
       </form>
 
       <template #footer>
         <div class="text-center text-sm">
-          Not a member?
+          Already have an account?
           <ULink
-              to="/register"
+              to="/login"
               class="text-primary hover:text-primary-400 font-semibold"
           >
-            Create an account
+            Sign in
           </ULink>
         </div>
       </template>
@@ -79,28 +90,41 @@
 
 <script setup>
 const authStore = useAuthStore()
+const name = ref('')
 const email = ref('')
 const password = ref('')
+const confirmPassword = ref('')
 const isLoading = ref(false)
 
-const handleLogin = async () => {
+const handleRegister = async () => {
+  // Basic password confirmation
+  if (password.value !== confirmPassword.value) {
+    useToast().add({
+      title: 'Registration Failed',
+      description: 'Passwords do not match',
+      color: 'red'
+    })
+    return
+  }
+
   isLoading.value = true
   try {
-    const success = await authStore.login({
-      username: email.value,
+    const success = await authStore.register({
+      name: name.value,
+      email: email.value,
       password: password.value
     })
 
     if (!success) {
       useToast().add({
-        title: 'Login Failed',
-        description: authStore.loginError || 'Unable to login',
+        title: 'Registration Failed',
+        description: authStore.loginError || 'Unable to create account',
         color: 'red'
       })
     }
   } catch (error) {
     useToast().add({
-      title: 'Login Error',
+      title: 'Registration Error',
       description: 'An unexpected error occurred',
       color: 'red'
     })
@@ -108,6 +132,4 @@ const handleLogin = async () => {
     isLoading.value = false
   }
 }
-
-
 </script>

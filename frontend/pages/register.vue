@@ -1,16 +1,17 @@
 <template>
   <div>
-    <h1>Settings</h1>
+    <AuthRegister />
   </div>
 </template>
 
-
 <script setup>
+
+// Optional: Add page metadata
 definePageMeta({
-  name: 'Dashboard',
-  layout: 'portal',
-  middleware: 'auth'
+  name: 'Register',
+  layout: 'auth',
 })
+
 </script>
 
 <style lang="scss" scoped>

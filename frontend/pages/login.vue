@@ -4,10 +4,14 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'Login'
-}
+<script setup>
+
+// Optional: Add page metadata
+definePageMeta({
+  name: 'Login',
+  layout: 'auth'
+})
+
 </script>
 
 <style lang="scss" scoped>

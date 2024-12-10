@@ -13,7 +13,8 @@
 
 definePageMeta({
   name: 'CrawlingHistory',
-  layout: 'portal'
+  layout: 'portal',
+  middleware: 'auth'
 });
 
 </script>
