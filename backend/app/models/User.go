@@ -13,8 +13,13 @@ type User struct {
 	Username  string `json:"username"`
 	Email     string `gorm:"unique" json:"email"`
 	Password  string
+	IsActive  bool      `gorm:"default:false" json:"is_active"`
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`
+}
+
+func (c *User) GetTableName() string {
+	return "users"
 }
 
 // UserIndexes returns the indexes for the User collection

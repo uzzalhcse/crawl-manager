@@ -48,7 +48,7 @@ func (that *AuthController) Login(c *fiber.Ctx) error {
 	// Authenticate user
 	authenticated, err := that.AuthService.Authenticate(request.Username, request.Password)
 	if err != nil {
-		return responses.Error(c, "Authentication failed")
+		return responses.Error(c, err.Error())
 	}
 
 	if !authenticated {

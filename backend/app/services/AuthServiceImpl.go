@@ -5,6 +5,7 @@ package services
 import (
 	"crawl-manager-backend/app/models"
 	"crawl-manager-backend/app/repositories"
+	"fmt"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -17,9 +18,20 @@ func NewAuthService(authRepo repositories.AuthRepository) *AuthServiceImpl {
 }
 
 func (s *AuthServiceImpl) Authenticate(username, password string) (bool, error) {
+	// First, check if the user exists
 	user, err := s.AuthRepo.FindUserByUsername(username)
 	if err != nil {
 		return false, err
+	}
+
+	// If user is nil (not found), return false
+	if user == nil {
+		return false, fmt.Errorf("user not found")
+	}
+
+	// Check if the account is active
+	if !user.IsActive {
+		return false, fmt.Errorf("account is not active")
 	}
 
 	// Check if the provided password matches the hashed password in the database
