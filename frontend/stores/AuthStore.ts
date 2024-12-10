@@ -92,6 +92,7 @@ export const useAuthStore = defineStore('AuthStore', {
     async register(userData: {
       name: string,
       email: string,
+      username: string,
       password: string
     }): Promise<boolean> {
       this.loginError = null;
@@ -99,6 +100,7 @@ export const useAuthStore = defineStore('AuthStore', {
         const { data, error } = await useAuthApi().register({
           name: userData.name,
           email: userData.email,
+          username: userData.username,
           password: userData.password
         });
 
@@ -107,16 +109,9 @@ export const useAuthStore = defineStore('AuthStore', {
           return false;
         }
 
-        if (data.value && data.value.token) {
-          await this.setToken(data.value.token);
-          await this.fetchUserProfile();
+        await navigateTo('/portal');
+        return !!data.value;
 
-          // Redirect to dashboard or onboarding
-          await navigateTo('/dashboard');
-          return true;
-        }
-
-        return false;
       } catch (err) {
         this.loginError = 'An unexpected error occurred during registration';
         console.error('Registration error:', err);

@@ -32,6 +32,15 @@
               required
           />
         </UFormGroup>
+        <UFormGroup label="Username" name="username">
+          <UInput
+              v-model="username"
+              type="text"
+              placeholder="Enter your username"
+              icon="i-heroicons-user"
+              required
+          />
+        </UFormGroup>
 
         <UFormGroup label="Email address" name="email">
           <UInput
@@ -92,6 +101,7 @@
 const authStore = useAuthStore()
 const name = ref('')
 const email = ref('')
+const username = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 const isLoading = ref(false)
@@ -112,6 +122,7 @@ const handleRegister = async () => {
     const success = await authStore.register({
       name: name.value,
       email: email.value,
+      username:username.value,
       password: password.value
     })
 

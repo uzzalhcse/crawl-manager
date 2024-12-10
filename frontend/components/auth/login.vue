@@ -33,16 +33,17 @@
           />
         </UFormGroup>
 
-        <UFormGroup name="password">
-          <div class="flex justify-between items-center mb-1">
-            <label class="block text-sm font-medium">Password</label>
-            <ULink
-                to="/forgot-password"
-                class="text-sm text-primary hover:text-primary-400"
-            >
-              Forgot password?
-            </ULink>
-          </div>
+        <UFormGroup label="Password" name="password">
+<!--          <div class="flex justify-between items-center mb-1">-->
+<!--            <label class="block text-sm font-medium">Password</label>-->
+<!--            <ULink-->
+<!--                to="#"-->
+<!--                disabled-->
+<!--                class="text-sm text-primary hover:text-primary-400"-->
+<!--            >-->
+<!--              Forgot password?-->
+<!--            </ULink>-->
+<!--          </div>-->
           <UInput
               v-model="password"
               type="password"

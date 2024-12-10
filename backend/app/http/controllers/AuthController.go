@@ -89,7 +89,7 @@ func (that *AuthController) Register(c *fiber.Ctx) error {
 	}
 
 	if err := that.AuthService.Register(user); err != nil {
-		return responses.Error(c, "Registration failed")
+		return responses.Error(c, err.Error())
 	}
 
 	return responses.Success(c, fiber.Map{"message": "Registration successful"})

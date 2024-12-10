@@ -17,13 +17,13 @@ func NewJWTService(secretKey string) *JWTServiceImpl {
 
 func (s *JWTServiceImpl) GenerateToken(user *models.User) (string, error) {
 	claims := jwt.MapClaims{
-		"sub":   strconv.Itoa(int(user.ID)),
-		"iss":   "my-app",                              // Replace with your desired issuer
-		"exp":   time.Now().Add(time.Hour * 24).Unix(), // Token expiration time (adjust as needed)
-		"iat":   time.Now().Unix(),
-		"name":  user.Name,
-		"email": user.Email,
-		// Add other custom claims as needed
+		"sub":      strconv.Itoa(int(user.ID)),
+		"iss":      "crawl-manager",
+		"exp":      time.Now().Add(5 * 365 * 24 * time.Hour).Unix(), // 5 years from now
+		"iat":      time.Now().Unix(),
+		"name":     user.Name,
+		"username": user.Username,
+		"email":    user.Email,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
