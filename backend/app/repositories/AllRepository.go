@@ -120,13 +120,36 @@ func (r *Repository) GetCrawlingHistory() ([]models.CrawlingHistory, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	crwCollection := []models.CrawlingHistory{}
+	// Calculate the date 15 days ago from now
+	daysAgo := time.Now().AddDate(0, 0, -15).Format("2006-01-02 15:04:05")
+
+	// Create a filter that:
+	// 1. Includes records with start_date within last 15 days OR
+	// 2. Includes records with no end_date (null or empty string)
+	filter := bson.M{
+		"$or": bson.A{
+			// Records with start_date within last 15 days
+			bson.M{
+				"start_date": bson.M{
+					"$gte": daysAgo, // Greater than or equal to 15 days ago
+				},
+			},
+			// Records with status running
+			bson.M{
+				"$or": bson.A{
+					bson.M{"status": "running"},
+				},
+			},
+		},
+	}
 
 	// Use MongoDB sort to get the latest data based on StartDate
 	findOptions := options.Find()
 	findOptions.SetSort(bson.D{{"start_date", -1}}) // Sort by StartDate in descending order
 
-	cursor, err := collection.Find(ctx, bson.M{}, findOptions)
+	crwCollection := []models.CrawlingHistory{}
+
+	cursor, err := collection.Find(ctx, filter, findOptions)
 	if err != nil {
 		return nil, err
 	}

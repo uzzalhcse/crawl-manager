@@ -6,6 +6,9 @@
         <h1 class="flex items-center gap-1.5 font-semibold text-gray-900 dark:text-white min-w-0">
           <span class="truncate">Crawling History</span>
         </h1>
+        <div class="">
+          <small>Recent crawling history from the last 15 days, including running crawlers</small>
+        </div>
       </template>
       <template #right>
         <div class="flex px-3 py-3.5 border-gray-200 dark:border-gray-700">
