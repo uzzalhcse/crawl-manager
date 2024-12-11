@@ -104,6 +104,8 @@ func createRequestLogger(logFile *os.File) fiber.Handler {
 		log.Printf("Completed: Status=%d, Duration=%v, Method=%s, Path=%s",
 			c.Response().StatusCode(), duration, method, path)
 
+		log.Printf("----------------------------------------------------------\n")
+
 		return err
 	}
 }
