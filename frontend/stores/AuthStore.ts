@@ -35,9 +35,9 @@ export const useAuthStore = defineStore('AuthStore', {
         this.isAuthenticated = true;
         this.accessToken = token;
         const tokenCookie = useCookie('access_token', {
-          maxAge: 60 * 60 * 24 * 7, // 7 days
+          maxAge: 60 * 60 * 24 * 7,
           httpOnly: false,
-          secure: true,
+          secure: false
         });
         tokenCookie.value = token;
         resolve(true);
