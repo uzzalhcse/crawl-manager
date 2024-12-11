@@ -5,7 +5,7 @@ import (
 )
 
 type LoginRequest struct {
-	Username string `json:"username" form:"username" validate:"required,min=5,max=50"`
-	Password string `json:"password" form:"password" validate:"required,min=6"`
+	Username string `json:"username" form:"username" validate:"required,min=4,max=50"`
+	Password string `json:"password" form:"password" validate:"required,min=8"`
 	*requests.Request
 }
