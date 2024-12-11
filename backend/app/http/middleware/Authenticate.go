@@ -73,9 +73,10 @@ func verifyToken(tokenString string) (*models.User, error) {
 	}
 
 	return &models.User{
-		ID:    userID,
-		Name:  getStringClaim(claims, "name"),
-		Email: getStringClaim(claims, "email"),
+		ID:       userID,
+		Name:     getStringClaim(claims, "name"),
+		Username: getStringClaim(claims, "username"),
+		Email:    getStringClaim(claims, "email"),
 	}, nil
 }
 
