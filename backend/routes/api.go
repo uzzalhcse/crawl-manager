@@ -71,7 +71,7 @@ func SetUpApiRoutes(api fiber.Router) {
 	secret.Delete("/:siteID", secretCollectionController.Delete)
 
 	// Proxy Management
-	proxy := api.Group("/proxy", middleware.Auth())
+	proxy := api.Group("/proxy")
 	proxy.Get("/sync", proxyController.Sync)
 	//proxy.Post("/", proxyController.Create)
 	proxy.Get("/", proxyController.Index)
