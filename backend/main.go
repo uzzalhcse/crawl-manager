@@ -22,8 +22,8 @@ func startServer() {
 	defer app.CloseDBConnection()
 	app.ConnectDB()
 
-	// Set up month-wise logging
-	logFile := setupMonthlyLogFile()
+	// Set up day-wise logging within month folders
+	logFile := setupDailyLogFile()
 	defer logFile.Close()
 
 	// Add middleware to log HTTP requests
@@ -41,17 +41,26 @@ func startServer() {
 	})
 }
 
-// setupMonthlyLogFile creates a log file with month-wise naming
-func setupMonthlyLogFile() *os.File {
+// setupDailyLogFile creates a log file with day-wise naming in month folders
+func setupDailyLogFile() *os.File {
 	// Create logs directory if it doesn't exist
-	logDir := "logs"
-	if err := os.MkdirAll(logDir, os.ModePerm); err != nil {
+	logBaseDir := "logs"
+	if err := os.MkdirAll(logBaseDir, os.ModePerm); err != nil {
 		log.Fatalf("Failed to create logs directory: %v", err)
 	}
 
-	// Generate filename with current month
+	// Generate month folder name
 	currentMonth := time.Now().Format("2006-01")
-	logFileName := filepath.Join(logDir, fmt.Sprintf("app-request-%s.log", currentMonth))
+	monthDir := filepath.Join(logBaseDir, currentMonth)
+
+	// Create month folder
+	if err := os.MkdirAll(monthDir, os.ModePerm); err != nil {
+		log.Fatalf("Failed to create month directory: %v", err)
+	}
+
+	// Generate daily log filename
+	currentDay := time.Now().Format("2006-01-02")
+	logFileName := filepath.Join(monthDir, fmt.Sprintf("requests-%s.log", currentDay))
 
 	// Open log file with append mode
 	logFile, err := os.OpenFile(logFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
