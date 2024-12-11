@@ -40,7 +40,7 @@ func (ctrl *SiteCollectionController) UpdateALL(c *fiber.Ctx) error {
 		return responses.Error(c, err.Error())
 	}
 	for _, siteCollection := range siteCollections {
-		err := CreateOrUpdateSchedulerJob(ctrl.Config, siteCollection.Frequency, siteCollection.SiteID, false)
+		err := CreateOrUpdateSchedulerJob(ctrl.Config, siteCollection.Frequency, siteCollection.SiteID, true)
 		if err != nil {
 			return responses.Error(c, err.Error())
 		}
