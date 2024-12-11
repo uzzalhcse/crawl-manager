@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
-	"strconv"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"strings"
 )
 
@@ -66,13 +66,14 @@ func verifyToken(tokenString string) (*models.User, error) {
 		return nil, fmt.Errorf("Empty user ID claim")
 	}
 
-	// Convert the ID claim to uint
-	userID, err := strconv.Atoi(userIDStr)
+	// Convert userIDStr to primitive.ObjectID
+	userID, err := primitive.ObjectIDFromHex(userIDStr)
 	if err != nil {
-		return nil, fmt.Errorf("Error converting user ID to int: %v", err)
+		return nil, fmt.Errorf("Invalid user ID format")
 	}
+
 	return &models.User{
-		ID:    uint(userID), // Convert to uint
+		ID:    userID,
 		Name:  getStringClaim(claims, "name"),
 		Email: getStringClaim(claims, "email"),
 	}, nil

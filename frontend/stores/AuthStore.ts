@@ -68,7 +68,8 @@ export const useAuthStore = defineStore('AuthStore', {
         });
 
         if (error.value) {
-          this.loginError = error.value?.message || 'Login failed';
+          this.loginError = 'Login failed';
+          console.log('Login error:',  data);
           return false;
         }
 

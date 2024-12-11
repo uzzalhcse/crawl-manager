@@ -93,11 +93,11 @@ const handleLogin = async () => {
     })
 
     if (!success) {
-      useToast().add({
-        title: 'Login Failed',
-        description: authStore.loginError || 'Unable to login',
-        color: 'red'
-      })
+      // useToast().add({
+      //   title: 'Login Failed',
+      //   description: authStore.loginError || 'Unable to login',
+      //   color: 'red'
+      // })
     }
   } catch (error) {
     useToast().add({

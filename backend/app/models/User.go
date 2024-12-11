@@ -2,18 +2,19 @@ package models
 
 import (
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
 
 type User struct {
-	ID        uint   `gorm:"primaryKey" json:"id"`
-	Name      string `json:"name"`
-	Username  string `json:"username"`
-	Email     string `gorm:"unique" json:"email"`
+	ID        primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	Name      string             `json:"name"`
+	Username  string             `json:"username"`
+	Email     string             `gorm:"unique" json:"email"`
 	Password  string
-	IsActive  bool      `gorm:"default:false" json:"is_active"`
+	IsActive  bool      `gorm:"default:false" json:"is_active" bson:"is_active"`
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`
 }

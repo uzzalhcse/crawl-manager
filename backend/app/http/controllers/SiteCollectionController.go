@@ -312,7 +312,8 @@ func CreateOrUpdateSchedulerJob(config *config.Config, frequency, siteName strin
 			"uri":        fmt.Sprintf("%s/api/start-crawler/%s", config.Manager.ServerIP, siteName),
 			"httpMethod": "GET",
 			"headers": map[string]string{
-				"Content-Type": "application/json",
+				"Content-Type":  "application/json",
+				"Authorization": "Bearer " + config.Manager.BearerToken,
 			},
 		},
 	}

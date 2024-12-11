@@ -103,6 +103,7 @@ func ExecuteCommand(command string, args []string) string {
 }
 func (that *ManagerController) StartCrawler(c *fiber.Ctx) error {
 	siteID := c.Params("siteID")
+	user := c.Locals("user").(*models.User)
 	siteCollection, err := that.siteService.GetByID(siteID)
 	if err != nil {
 		return responses.Error(c, err.Error())
@@ -115,17 +116,16 @@ func (that *ManagerController) StartCrawler(c *fiber.Ctx) error {
 	if err != nil {
 		return responses.Error(c, err.Error())
 	}
-	fmt.Println("Creating VM for: ", siteID)
 	instanceName, instanceID, err := helper.CreateVM(*siteCollection, that.Config)
 	if err != nil {
 		return responses.Error(c, err.Error())
 	}
-	fmt.Println("instanceName: ", instanceName)
 	logUrl := fmt.Sprintf(
 		`https://console.cloud.google.com/logs/query;query=resource.type%%3D%%22gce_instance%%22%%0Aresource.labels.instance_id%%3D%%22%s%%22%%0AlogName%%3D%%22projects%%2F%s%%2Flogs%%2Fgoogle_metadata_script_runner%%22;?project=%s`,
 		instanceID, that.Config.Manager.ProjectID, that.Config.Manager.ProjectID,
 	)
 	err = that.siteService.CreateCrawlingHistory(&models.CrawlingHistory{
+		InitiateBy:   user.Username,
 		SiteID:       siteID,
 		Status:       "running",
 		InstanceName: instanceName,

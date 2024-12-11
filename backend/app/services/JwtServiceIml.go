@@ -3,7 +3,6 @@ package services
 import (
 	"crawl-manager-backend/app/models"
 	"github.com/dgrijalva/jwt-go"
-	"strconv"
 	"time"
 )
 
@@ -17,7 +16,7 @@ func NewJWTService(secretKey string) *JWTServiceImpl {
 
 func (s *JWTServiceImpl) GenerateToken(user *models.User) (string, error) {
 	claims := jwt.MapClaims{
-		"sub":      strconv.Itoa(int(user.ID)),
+		"sub":      user.ID,
 		"iss":      "crawl-manager",
 		"exp":      time.Now().Add(5 * 365 * 24 * time.Hour).Unix(), // 5 years from now
 		"iat":      time.Now().Unix(),

@@ -13,6 +13,7 @@ type ManagerConfig struct {
 	GcpBucketName             string
 	WebShareApiKey            string
 	WebShareApiUrl            string
+	BearerToken               string
 }
 
 func loadManagerConfig() ManagerConfig {
@@ -27,5 +28,6 @@ func loadManagerConfig() ManagerConfig {
 		GcpBucketName:             viper.GetString("GCP_BUCKET_NAME"),
 		WebShareApiKey:            viper.GetString("WEB_SHARE_API_KEY"),
 		WebShareApiUrl:            viper.GetString("WEB_SHARE_API_URL"),
+		BearerToken:               viper.GetString("BEARER_TOKEN"),
 	}
 }

@@ -10,6 +10,7 @@ type CrawlingHistory struct {
 	Site         *SiteCollection `json:"site" bson:"site"`
 	Logs         string          `json:"logs" bson:"logs"`
 	LogUrl       string          `json:"log_url" bson:"log_url"`
+	InitiateBy   string          `json:"initiate_by" bson:"initiate_by"`
 }
 
 func (c *CrawlingHistory) GetTableName() string {
