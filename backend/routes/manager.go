@@ -2,11 +2,13 @@ package routes
 
 import (
 	"crawl-manager-backend/app/http/controllers"
+	"crawl-manager-backend/app/http/middleware"
 	"github.com/gofiber/fiber/v2"
 )
 
 func SetUpManagerRoutes(api fiber.Router) {
 	managerController := controllers.NewManagerController()
+	api = api.Group("", middleware.Auth())
 	// Define routes
 	api.Get("/start-crawler/:SiteID", managerController.StartCrawler)
 	api.Get("/build-crawler/:SiteID", managerController.BuildCrawler)
