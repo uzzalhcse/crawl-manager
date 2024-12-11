@@ -34,19 +34,6 @@ func (ctrl *SiteCollectionController) Index(c *fiber.Ctx) error {
 	}
 	return responses.Success(c, siteCollections)
 }
-func (ctrl *SiteCollectionController) UpdateALL(c *fiber.Ctx) error {
-	siteCollections, err := ctrl.Service.GetAllSiteCollections()
-	if err != nil {
-		return responses.Error(c, err.Error())
-	}
-	for _, siteCollection := range siteCollections {
-		err := CreateOrUpdateSchedulerJob(ctrl.Config, siteCollection.Frequency, siteCollection.SiteID, true)
-		if err != nil {
-			return responses.Error(c, err.Error())
-		}
-	}
-	return responses.Success(c, siteCollections)
-}
 func (ctrl *SiteCollectionController) Create(c *fiber.Ctx) error {
 	var siteCollection models.SiteCollection
 	if err := c.BodyParser(&siteCollection); err != nil {
@@ -230,7 +217,7 @@ func (ctrl *SiteCollectionController) Update(c *fiber.Ctx) error {
 	}
 
 	// Update or create the Cloud Scheduler job if frequency is specified and environment is production
-	if siteCollection.Frequency != "" && ctrl.Config.App.Env == "production" {
+	if siteCollection.Frequency != "" && siteData.Frequency != siteCollection.Frequency && ctrl.Config.App.Env == "production" {
 		err := CreateOrUpdateSchedulerJob(ctrl.Config, siteCollection.Frequency, siteCollection.SiteID, true)
 		if err != nil {
 			return responses.Error(c, err.Error())
