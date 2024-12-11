@@ -217,7 +217,7 @@ func (ctrl *SiteCollectionController) Update(c *fiber.Ctx) error {
 	}
 
 	// Update or create the Cloud Scheduler job if frequency is specified and environment is production
-	if siteCollection.Frequency != "" && siteData.Frequency != siteCollection.Frequency && ctrl.Config.App.Env == "production" {
+	if siteCollection.Frequency != "" && siteData.Frequency != siteCollection.Frequency {
 		err := CreateOrUpdateSchedulerJob(ctrl.Config, siteCollection.Frequency, siteCollection.SiteID, true)
 		if err != nil {
 			return responses.Error(c, err.Error())
