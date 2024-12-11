@@ -61,7 +61,6 @@ func SetUpApiRoutes(api fiber.Router) {
 	// SiteSecretCollection routes
 	secret := api.Group("/site-secret", middleware.Auth())
 	secret.Post("/", secretCollectionController.Create)
-	secret.Get("env/:siteID", secretCollectionController.GetEnvBySite)
 	secret.Get("/:siteID", secretCollectionController.GetByID)
 	secret.Delete("/:siteID", secretCollectionController.Delete)
 
@@ -75,4 +74,10 @@ func SetUpApiRoutes(api fiber.Router) {
 	proxy.Put("/:id", proxyController.Update)
 	proxy.Delete("/:server", proxyController.Delete)
 	//proxy.Post("/allocate-proxies", proxyController.AssignProxies)
+
+	/*
+		Public api
+	*/
+
+	api.Get("/site-secret/env/:siteID", secretCollectionController.GetEnvBySite)
 }
