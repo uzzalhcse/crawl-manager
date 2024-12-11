@@ -34,6 +34,19 @@ func (ctrl *SiteCollectionController) Index(c *fiber.Ctx) error {
 	}
 	return responses.Success(c, siteCollections)
 }
+func (ctrl *SiteCollectionController) UpdateALL(c *fiber.Ctx) error {
+	siteCollections, err := ctrl.Service.GetAllSiteCollections()
+	if err != nil {
+		return responses.Error(c, err.Error())
+	}
+	for _, siteCollection := range siteCollections {
+		err := CreateOrUpdateSchedulerJob(ctrl.Config, siteCollection.Frequency, siteCollection.SiteID, false)
+		if err != nil {
+			return responses.Error(c, err.Error())
+		}
+	}
+	return responses.Success(c, siteCollections)
+}
 func (ctrl *SiteCollectionController) Create(c *fiber.Ctx) error {
 	var siteCollection models.SiteCollection
 	if err := c.BodyParser(&siteCollection); err != nil {

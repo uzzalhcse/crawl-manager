@@ -43,6 +43,7 @@ func SetUpApiRoutes(api fiber.Router) {
 
 	// SiteCollection routes
 	site := api.Group("/site", middleware.Auth())
+	site.Get("/update-all", siteCollectionController.UpdateALL)
 	site.Get("/", siteCollectionController.Index)
 	site.Post("/", siteCollectionController.Create)
 	site.Get("/:siteID", siteCollectionController.GetByID)
