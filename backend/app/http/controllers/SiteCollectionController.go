@@ -47,7 +47,7 @@ func (ctrl *SiteCollectionController) Create(c *fiber.Ctx) error {
 	if err := ctrl.ProxyService.AssignProxiesToSite(siteCollection.SiteID, siteCollection.NumberOfProxies); err != nil {
 		return responses.Error(c, "Failed to assign proxies: "+err.Error())
 	}
-	if siteCollection.Frequency != "" {
+	if siteCollection.Frequency != "" && ctrl.Config.App.Env == "production" {
 		err := CreateOrUpdateSchedulerJob(ctrl.Config, siteCollection.Frequency, siteCollection.SiteID, false)
 		if err != nil {
 			return responses.Error(c, err.Error())
@@ -313,7 +313,7 @@ func CreateOrUpdateSchedulerJob(config *config.Config, frequency, siteName strin
 			"httpMethod": "GET",
 			"headers": map[string]string{
 				"Content-Type":  "application/json",
-				"Authorization": "Bearer " + config.Manager.BearerToken,
+				"Authorization": config.Manager.BearerToken,
 			},
 		},
 	}
