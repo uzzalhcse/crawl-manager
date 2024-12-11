@@ -5,6 +5,8 @@ export const useApi = (endpoint: string, options?: UseFetchOptions<object>) => {
   const route = useRoute();
   const baseUrl = config.public.apiBase;
   const url = `${baseUrl}${endpoint}`;
+  const token = useCookie('access_token');
+
 
   const toast = useToast()
   return useFetch(url, {
@@ -13,7 +15,7 @@ export const useApi = (endpoint: string, options?: UseFetchOptions<object>) => {
     async onRequest({ options }) {
       options.headers = {
         ...options.headers,
-        "Authorization": "Bearer Token"
+        "Authorization": "Bearer " + token.value
       };
     },
     async onResponse({ response }) {

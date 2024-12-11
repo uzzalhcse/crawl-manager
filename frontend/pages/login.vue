@@ -9,7 +9,8 @@
 // Optional: Add page metadata
 definePageMeta({
   name: 'Login',
-  layout: 'auth'
+  layout: 'auth',
+  middleware: ['auth']
 })
 
 </script>

@@ -2,6 +2,7 @@ package routes
 
 import (
 	"crawl-manager-backend/app/http/controllers"
+	"crawl-manager-backend/app/http/middleware"
 	"crawl-manager-backend/app/repositories"
 	"crawl-manager-backend/app/services"
 	"crawl-manager-backend/bootstrap"
@@ -35,7 +36,7 @@ func SetUpApiRoutes(api fiber.Router) {
 	api.Get("/test/available-slots", siteCollectionController.FindNextAvailableTimeSlot) // test api
 
 	// SiteCollection routes
-	site := api.Group("/site")
+	site := api.Group("/site", middleware.Auth())
 	site.Get("/", siteCollectionController.Index)
 	site.Post("/", siteCollectionController.Create)
 	site.Get("/:siteID", siteCollectionController.GetByID)
@@ -43,7 +44,7 @@ func SetUpApiRoutes(api fiber.Router) {
 	site.Delete("/:siteID", siteCollectionController.Delete)
 
 	// Collection routes
-	collection := api.Group("/collection")
+	collection := api.Group("/collection", middleware.Auth())
 	collection.Get("/", collectionController.Index)
 	collection.Post("/", collectionController.Create)
 	collection.Get("/:collectionID", collectionController.GetByID)
@@ -51,21 +52,21 @@ func SetUpApiRoutes(api fiber.Router) {
 	collection.Delete("/:collectionID", collectionController.Delete)
 
 	// UrlCollection routes
-	url := api.Group("/urlcollections")
+	url := api.Group("/urlcollections", middleware.Auth())
 	url.Post("/", urlCollectionController.Create)
 	url.Get("/:collectionID", urlCollectionController.GetByID)
 	url.Put("/:collectionID", urlCollectionController.Update)
 	url.Delete("/:collectionID", urlCollectionController.Delete)
 
 	// SiteSecretCollection routes
-	secret := api.Group("/site-secret")
+	secret := api.Group("/site-secret", middleware.Auth())
 	secret.Post("/", secretCollectionController.Create)
 	secret.Get("env/:siteID", secretCollectionController.GetEnvBySite)
 	secret.Get("/:siteID", secretCollectionController.GetByID)
 	secret.Delete("/:siteID", secretCollectionController.Delete)
 
 	// Proxy Management
-	proxy := api.Group("/proxy")
+	proxy := api.Group("/proxy", middleware.Auth())
 	proxy.Get("/sync", proxyController.Sync)
 	//proxy.Post("/", proxyController.Create)
 	proxy.Get("/", proxyController.Index)

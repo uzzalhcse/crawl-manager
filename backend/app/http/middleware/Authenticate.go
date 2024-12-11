@@ -9,6 +9,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gofiber/fiber/v2"
 	"strconv"
+	"strings"
 )
 
 // Your secret key for signing and validating JWT tokens
@@ -19,6 +20,10 @@ func Auth() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		// Extract the token from the request header or query parameter
 		token := c.Get("Authorization")
+
+		// Remove 'Bearer ' prefix if present
+		token = strings.TrimPrefix(token, "Bearer ")
+		token = strings.TrimPrefix(token, "bearer ")
 
 		// Verify the token
 		user, err := verifyToken(token)
