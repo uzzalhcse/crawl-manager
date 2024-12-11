@@ -6,6 +6,8 @@ import (
 	"crawl-manager-backend/routes"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -20,8 +22,12 @@ func startServer() {
 	defer app.CloseDBConnection()
 	app.ConnectDB()
 
+	// Set up month-wise logging
+	logFile := setupMonthlyLogFile()
+	defer logFile.Close()
+
 	// Add middleware to log HTTP requests
-	app.App.Use(requestLogger)
+	app.App.Use(createRequestLogger(logFile))
 
 	// Register routes
 	routes.RegisterRoutes(app.App)
@@ -33,6 +39,64 @@ func startServer() {
 	app.GracefulShutdown(func() {
 		shutdownApplication(app)
 	})
+}
+
+// setupMonthlyLogFile creates a log file with month-wise naming
+func setupMonthlyLogFile() *os.File {
+	// Create logs directory if it doesn't exist
+	logDir := "logs"
+	if err := os.MkdirAll(logDir, os.ModePerm); err != nil {
+		log.Fatalf("Failed to create logs directory: %v", err)
+	}
+
+	// Generate filename with current month
+	currentMonth := time.Now().Format("2006-01")
+	logFileName := filepath.Join(logDir, fmt.Sprintf("app-request-%s.log", currentMonth))
+
+	// Open log file with append mode
+	logFile, err := os.OpenFile(logFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatalf("Failed to open log file: %v", err)
+	}
+
+	// Set output to both file and standard output
+	log.SetOutput(logFile)
+	return logFile
+}
+
+// createRequestLogger creates a middleware for detailed request logging
+func createRequestLogger(logFile *os.File) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		start := time.Now()
+
+		// Collect detailed request information
+		method := c.Method()
+		path := c.OriginalURL()
+		ip := c.IP()
+		userAgent := c.Get("User-Agent")
+
+		// Log incoming request with more details
+		log.Printf("Incoming Request: Method=%s, Path=%s, IP=%s, UserAgent=%s",
+			method, path, ip, userAgent)
+
+		// Log headers (optional, can be verbose)
+		headers := c.GetReqHeaders()
+		headerLog := "Request Headers:\n"
+		for key, value := range headers {
+			headerLog += fmt.Sprintf("  %s: %s\n", key, value)
+		}
+		log.Println(headerLog)
+
+		// Continue processing the request
+		err := c.Next()
+
+		// Log completion details
+		duration := time.Since(start)
+		log.Printf("Completed: Status=%d, Duration=%v, Method=%s, Path=%s",
+			c.Response().StatusCode(), duration, method, path)
+
+		return err
+	}
 }
 
 func startApplication(app *bootstrap.Application) {
@@ -48,19 +112,4 @@ func shutdownApplication(app *bootstrap.Application) {
 	}
 
 	app.CloseDBConnection()
-}
-
-// Middleware to log HTTP requests
-func requestLogger(c *fiber.Ctx) error {
-	start := time.Now()
-	log.Printf("Incoming %s %s from %s", c.Method(), c.OriginalURL(), c.IP())
-
-	// Continue processing the request
-	err := c.Next()
-
-	// Log completion details
-	duration := time.Since(start)
-	log.Printf("Completed %d in %v", c.Response().StatusCode(), duration)
-
-	return err
 }

@@ -47,7 +47,7 @@ func (ctrl *SiteCollectionController) Create(c *fiber.Ctx) error {
 	if err := ctrl.ProxyService.AssignProxiesToSite(siteCollection.SiteID, siteCollection.NumberOfProxies); err != nil {
 		return responses.Error(c, "Failed to assign proxies: "+err.Error())
 	}
-	if siteCollection.Frequency != "" {
+	if siteCollection.Frequency != "" && ctrl.Config.App.Env == "production" {
 		err := CreateOrUpdateSchedulerJob(ctrl.Config, siteCollection.Frequency, siteCollection.SiteID, false)
 		if err != nil {
 			return responses.Error(c, err.Error())

@@ -18,9 +18,9 @@ func RegisterRoutes(router fiber.Router) {
 	SetUpWebRoutes(web)
 
 	api := router.Group("/api")
+	auth := router.Group("/api/auth")
+	SetUpAuthRoutes(auth)
 	SetUpApiRoutes(api)
 	SetUpManagerRoutes(api)
 
-	auth := router.Group("/api/auth")
-	SetUpAuthRoutes(auth)
 }
