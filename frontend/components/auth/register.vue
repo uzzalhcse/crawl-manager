@@ -127,11 +127,11 @@ const handleRegister = async () => {
     })
 
     if (!success) {
-      useToast().add({
-        title: 'Registration Failed',
-        description: authStore.loginError || 'Unable to create account',
-        color: 'red'
-      })
+      // useToast().add({
+      //   title: 'Registration Failed',
+      //   description: authStore.loginError || 'Unable to create account',
+      //   color: 'red'
+      // })
     }
   } catch (error) {
     useToast().add({
