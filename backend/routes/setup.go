@@ -19,6 +19,7 @@ func RegisterRoutes(router fiber.Router) {
 
 	api := router.Group("/api")
 	auth := router.Group("/api/auth")
+	SetUpPublicRoutes(api)
 	SetUpAuthRoutes(auth)
 	SetUpApiRoutes(api)
 	SetUpManagerRoutes(api)

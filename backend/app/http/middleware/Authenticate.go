@@ -15,21 +15,27 @@ import (
 // Your secret key for signing and validating JWT tokens
 var secretKey = []byte(bootstrap.App().Config.App.JwtSecret)
 
-// Auth is a middleware for handling JWT token authentication
 func Auth() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		// Extract the token from the request header or query parameter
+		// Extract the token from the request header
 		token := c.Get("Authorization")
 
 		// Remove 'Bearer ' prefix if present
 		token = strings.TrimPrefix(token, "Bearer ")
 		token = strings.TrimPrefix(token, "bearer ")
 
+		// If token is empty, return unauthorized
+		if token == "" {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "No authentication token provided",
+			})
+		}
+
 		// Verify the token
 		user, err := verifyToken(token)
 		if err != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Unauthorized",
+				"error": "Invalid or expired token",
 				"data":  err.Error(),
 			})
 		}

@@ -23,34 +23,6 @@ func SetUpApiRoutes(api fiber.Router) {
 	collectionController := controllers.NewCollectionController(collectionService)
 	urlCollectionController := controllers.NewUrlCollectionController(urlCollectionService)
 	secretCollectionController := controllers.NewSecretCollectionController(secretCollectionService)
-	proxyController := controllers.NewProxyController(proxyService)
-
-	// Test controller
-	testService := services.NewTestService(repo)
-	testController := controllers.NewTestController(testService)
-
-	/*
-		Public api
-	*/
-
-	api.Get("/site-secret/env/:siteID", secretCollectionController.GetEnvBySite)
-
-	// Proxy Management
-	proxy := api.Group("/proxy")
-	proxy.Get("/sync", proxyController.Sync)
-	//proxy.Post("/", proxyController.Create)
-	proxy.Get("/", proxyController.Index)
-	proxy.Get("/:siteID", proxyController.Show)
-	proxy.Post("/stop", proxyController.StopProxy)
-	proxy.Put("/:id", proxyController.Update)
-	proxy.Delete("/:server", proxyController.Delete)
-	//proxy.Post("/allocate-proxies", proxyController.AssignProxies)
-
-	// Define test routes
-	api.Get("/", testController.Test)
-	api.Get("/test", testController.GetAllHandler)
-	api.Get("/start-crawler/:SiteID/:zone", testController.StartCrawler)
-	api.Get("/test/available-slots", siteCollectionController.FindNextAvailableTimeSlot) // test api
 
 	/*
 		Private routes
