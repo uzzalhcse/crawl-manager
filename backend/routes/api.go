@@ -29,6 +29,12 @@ func SetUpApiRoutes(api fiber.Router) {
 	testService := services.NewTestService(repo)
 	testController := controllers.NewTestController(testService)
 
+	/*
+		Public api
+	*/
+
+	api.Get("/site-secret/env/:siteID", secretCollectionController.GetEnvBySite)
+
 	// Define routes
 	api.Get("/", testController.Test)
 	api.Get("/test", testController.GetAllHandler)
@@ -74,10 +80,4 @@ func SetUpApiRoutes(api fiber.Router) {
 	proxy.Put("/:id", proxyController.Update)
 	proxy.Delete("/:server", proxyController.Delete)
 	//proxy.Post("/allocate-proxies", proxyController.AssignProxies)
-
-	/*
-		Public api
-	*/
-
-	api.Get("/site-secret/env/:siteID", secretCollectionController.GetEnvBySite)
 }
